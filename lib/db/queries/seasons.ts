@@ -140,6 +140,59 @@ export async function getSeasonStandings(year: number): Promise<{
   return { drivers: driverRows, constructors: constructorRows };
 }
 
+/**
+ * Row shape for the seasons catalogue: same fields as {@link SeasonListItem} but with the
+ * champion names resolved, so the list page can render champion strings without a second
+ * round-trip per row.
+ */
+export type SeasonCatalogRow = {
+  year: number;
+  summary: string | null;
+  worldChampionName: string | null;
+  worldChampionSlug: string | null;
+  constructorsChampionName: string | null;
+  constructorsChampionSlug: string | null;
+  dataConfidence: string;
+};
+
+/**
+ * Season list with champion names joined in. Same filters as {@link listSeasons}; the join
+ * is `leftJoin` so a season with no recorded champion yet (the running season, for example)
+ * still appears with nulls rather than dropping out of the catalogue.
+ */
+export async function listSeasonsForCatalog(
+  input: unknown = {},
+): Promise<SeasonCatalogRow[]> {
+  const filters = seasonFiltersSchema.parse(input);
+
+  const conditions = [];
+
+  if (filters.yearFrom) conditions.push(gte(seasons.year, filters.yearFrom));
+  if (filters.yearTo) conditions.push(lte(seasons.year, filters.yearTo));
+  if (filters.decade) {
+    conditions.push(gte(seasons.year, filters.decade));
+    conditions.push(lte(seasons.year, filters.decade + 9));
+  }
+
+  return db
+    .select({
+      year: seasons.year,
+      summary: seasons.summary,
+      worldChampionName: drivers.fullName,
+      worldChampionSlug: drivers.slug,
+      constructorsChampionName: teams.name,
+      constructorsChampionSlug: teams.slug,
+      dataConfidence: seasons.dataConfidence,
+    })
+    .from(seasons)
+    .leftJoin(drivers, eq(seasons.worldChampionDriverId, drivers.id))
+    .leftJoin(teams, eq(seasons.constructorsChampionTeamId, teams.id))
+    .where(conditions.length ? and(...conditions) : undefined)
+    .orderBy(desc(seasons.year))
+    .limit(filters.limit)
+    .offset(filters.offset);
+}
+
 export async function getEarliestAndLatestSeason() {
   const [earliest] = await db
     .select({ year: seasons.year })
