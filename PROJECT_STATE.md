@@ -5,26 +5,25 @@
 > Не доверять этому файлу слепо — при расхождении с фактическим кодом доверять коду и
 > исправлять этот файл.
 
-Last updated: 2026-09-04 (Milestone 0 completed)
+Last updated: 2026-09-04 (Milestone 1 completed)
 
 ---
 
 ## Current milestone
 
-Milestone 0 — Project Audit & Architecture (завершён, ожидает подтверждения пользователя)
+Milestone 1 — Project Foundation (завершён, ожидает подтверждения пользователя)
 
 ## Overall progress
 
-~4% (архитектура зафиксирована, код приложения не написан)
+~12% (архитектура + рабочий скелет приложения; данных и реальных страниц ещё нет)
 
 ## Completed
 
-- Milestone 0 — Project Audit & Architecture:
-  - Проверено фактическое состояние репозитория: пустая директория, git не инициализирован,
-    из файлов присутствуют только `MASTERPROMPT.md` и `PROJECT_STATE.md`.
-  - Зафиксированы точные версии стека (см. "Technical decisions").
-  - Финализирована схема БД (см. "Database status").
-  - Финализированы роуты, файловая структура, env-переменные, design tokens (см. ниже).
+- **Milestone 0 — Project Audit & Architecture:** зафиксированы версии стека, схема БД,
+  роуты, файловая структура, env-переменные, design tokens.
+- **Milestone 1 — Project Foundation:** рабочее Next.js-приложение с дизайн-системой,
+  навигацией, темами и заглушками всех MVP-роутов. Валидация (typecheck / lint / format /
+  build / браузер) пройдена.
 
 ## In progress
 
@@ -32,300 +31,334 @@ Milestone 0 — Project Audit & Architecture (завершён, ожидает �
 
 ## Not completed
 
-- Milestones 1–14
+- Milestones 2–14
 
 ## Technical decisions
 
-Версии проверены через `npm view <pkg> versions/dist-tags --json` 2026-09-04. Все —
-последние **стабильные** (не canary/beta/rc) на этот момент.
+Фактически установленные версии (`npm ls --depth=0`, 2026-09-04):
 
-| Пакет | Версия | Примечание |
-|---|---|---|
-| next | **16.3.4** | Стабильный Next.js 16 уже доступен в registry (не canary) → используем его согласно правилу раздела 2 MASTERPROMPT (переопределяет упоминание "15.x" как дефолт). Требует `react`/`react-dom` `^19.0.0`, Node `>=20.9.0`. |
-| react / react-dom | **19.2.8** | `react-dom@19.2.8` жёстко требует `react@^19.2.8` — версии должны совпадать. |
-| typescript | **7.0.2** | Актуальный `latest` в registry на дату проверки. На Milestone 1, при инициализации проекта, перепроверить совместимость с `create-next-app`/`shadcn` CLI — если возникнут конфликты, зафиксировать как "Failed approaches" и откатиться на последнюю TS 5.x LTS-ветку. |
-| tailwindcss | **4.3.3** | Tailwind 4 стабилен, конфликтов с shadcn CLI на момент проверки не выявлено (перепроверить практически на Milestone 1). |
-| shadcn (CLI) | **4.20.1** | Пакет называется `shadcn` (не `shadcn-ui`, тот deprecated). |
-| drizzle-orm | **0.45.2** | v1 существует только в `beta`/`rc` dist-tags, не `latest` → используем стабильную 0.x ветку. |
-| drizzle-kit | **0.31.10** | |
-| @supabase/supabase-js | **2.115.0** | |
-| Node.js | v24.14.0 (локально) | Соответствует требованию Next.js 16 (`>=20.9.0`). |
+| Пакет                       | Версия     | Примечание                                                                                                                                                                                                                                          |
+| --------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| next                        | **16.3.4** | Стабильный Next 16 доступен в registry → используем его вместо 15.x (правило раздела 2 MASTERPROMPT). Turbopack — дефолтный бандлер.                                                                                                                |
+| react / react-dom           | **19.2.8** | `react-dom` требует ровно `react@^19.2.8`.                                                                                                                                                                                                          |
+| typescript                  | **5.9.3**  | **Корректировка решения Milestone 0.** Там было записано 7.0.2 по dist-tag `latest`. Официальный шаблон `create-next-app@16.3.4` пинит `typescript: "^5"` — это тестируемая с Next 16 ветка. Следуем шаблону: рабочий стек важнее номера версии. |
+| tailwindcss                 | **4.3.3**  | CSS-first конфигурация (`@theme` в `app/globals.css`), файла `tailwind.config.ts` нет и он не нужен.                                                                                                                                                |
+| shadcn (CLI)                | **4.20.1** | Ставится и как зависимость проекта — так устроен shadcn 4.                                                                                                                                                                                          |
+| radix-ui                    | **1.6.7**  | Единый пакет, импорт через namespace: `import { Dialog } from "radix-ui"`.                                                                                                                                                                          |
+| next-themes                 | **0.4.6**  |                                                                                                                                                                                                                                                     |
+| lucide-react                | **1.40.0** | Иконки.                                                                                                                                                                                                                                             |
+| class-variance-authority    | **0.7.1**  |                                                                                                                                                                                                                                                     |
+| tailwind-merge              | **3.6.0**  |                                                                                                                                                                                                                                                     |
+| tw-animate-css              | **1.4.0**  | Добавлен shadcn init.                                                                                                                                                                                                                               |
+| eslint                      | **9.39.5** | npm выдаёт deprecation warning, но это версия, которую тянет `eslint-config-next@16.3.4`. Линт работает. Не трогать без причины.                                                                                                                    |
+| eslint-config-prettier      | **10.1.8** | Импорт `eslint-config-prettier/flat`, последним в массиве конфигов.                                                                                                                                                                                 |
+| prettier                    | **3.9.6**  |                                                                                                                                                                                                                                                     |
+| prettier-plugin-tailwindcss | **0.8.1**  | Сортировка классов Tailwind.                                                                                                                                                                                                                        |
+| Node.js                     | v24.14.0   | Требование Next 16 — `>=20.9.0`.                                                                                                                                                                                                                    |
 
-Framer Motion, GSAP, Recharts, Zod, next-themes — конкретные версии зафиксировать на
-Milestone 1 при фактической установке (`npm install <pkg>@latest` и записать резолвнутую
-версию сюда).
+Ещё не установлены (ставить на своих milestone'ах, не раньше): `drizzle-orm` / `drizzle-kit` /
+`@supabase/supabase-js` / `zod` (Milestone 2), `framer-motion` / `gsap` (Milestone 11),
+`recharts` (по необходимости). На Milestone 0 планировались drizzle-orm 0.45.2,
+drizzle-kit 0.31.10, @supabase/supabase-js 2.115.0 — перепроверить актуальность при установке.
 
 ## Architecture decisions
 
-### Dark mode — основной режим
-Digital museum / cinematic направление лучше всего читается в dark mode. Решение: **dark —
-основная (default) тема, light — полноценно поддерживаемая, но вторичная**. Переключатель
-темы обязателен (Milestone 1, `next-themes`). Это решение можно пересмотреть по фидбеку
-пользователя после Milestone 1 (визуальная проверка).
+### Темы
 
-### Design tokens
+`next-themes`, `attribute="class"`, **`defaultTheme="dark"`, `enableSystem={false}`**.
+Архив открывается тёмным всегда; light доступен переключателем. Системная тема сознательно
+не учитывается — бинарный переключатель предсказуемее, а dark является брендовым режимом.
+Пересмотреть, если пользователь захочет уважать `prefers-color-scheme`.
 
-**Цветовая палитра (dark, primary):**
-| Токен | Значение | Назначение |
-|---|---|---|
-| `--background` | `#0A0A0C` | базовый фон, не чистый чёрный (глубина) |
-| `--surface` | `#131316` | карточки, панели |
-| `--foreground` | `#F4F3EF` | основной текст, тёплый off-white (editorial, не стерильный) |
-| `--muted-foreground` | `#8A8A90` | вторичный текст, подписи |
-| `--border` | `#232327` | тонкие разделители (в духе "тонкие линии" из брифа) |
-| `--accent` | `#C9A227` | приглушённое золото/латунь — ассоциация с трофеями/архивом, НЕ типичный F1-красный |
-| `--accent-foreground` | `#0A0A0C` | текст поверх accent |
-| `--destructive` | `#B3402A` | только для ошибок/предупреждений, не декоративно |
+### Именование токенов — ВАЖНО, источник путаницы
 
-**Light (paritetный):**
-| Токен | Значение |
-|---|---|
-| `--background` | `#FAFAF8` |
-| `--surface` | `#FFFFFF` |
-| `--foreground` | `#111113` |
-| `--muted-foreground` | `#6B6B70` |
-| `--border` | `#E4E3DE` |
-| `--accent` | `#9C7A1C` (затемнён для контраста на светлом фоне) |
+В брифе «accent» = фирменное золото. В shadcn `--accent` — это приглушённая поверхность для
+hover. Поэтому:
 
-Явно избегаем: glossy racing red как основной accent, neon-оттенки, glassmorphism-подложки.
+- **`--primary` = фирменное золото** (`#C9A227` dark / `#9C7A1C` light) — кнопки, ссылки,
+  focus ring, акценты.
+- **`--accent` = нейтральная hover-поверхность** (`#1C1C20` dark / `#F0EFEB` light).
 
-**Типографика:**
-- **Display/editorial headline** (крупные statement-заголовки, "THE FASTEST SPORT..."):
-  serif — **Fraunces** (Google Fonts, вариативный, премиальный editorial-характер).
-- **UI/body sans** (навигация, текст, карточки): **Inter** (variable font, высокая
-  читаемость на всех размерах).
-- **Technical/spec mono** (технические характеристики в стиле спецификации —
-  "V10 · 3.0L · ~900 HP", лаптаймы, годы): **IBM Plex Mono**.
-Все три — свободные (Google Fonts / open source), подключаются через `next/font`.
+Не «исправлять» это, поменяв местами — сломает все shadcn-компоненты.
 
-**Типографическая шкала** (модульная, база 16px, коэффициент ~1.25, с расширением вверх
-для hero-заголовков):
-`12 / 14 / 16 / 18 / 20 / 25 / 32 / 40 / 56 / 80 / 112` px (последние два — только для
-landing hero на десктопе, с адаптивным уменьшением через `clamp()`).
+### Design tokens (реализованы в `app/globals.css`)
 
-**Spacing:** базовая шкала Tailwind (4px unit) без изменений + расширенные editorial-токены
-для вертикальных отступов секций: `section-y-sm: 64px`, `section-y-md: 96px`,
-`section-y-lg: 160px` (десктоп; на мобильных секции масштабируются вниз, финальные значения
-подбираются визуально на Milestone 1/3).
+Dark (основной): `--background #0A0A0C`, `--card/popover #131316`, `--foreground #F4F3EF`,
+`--muted-foreground #8A8A90`, `--border/input #232327`, `--primary #C9A227`,
+`--secondary/muted/accent #1C1C20`, `--destructive #B3402A`, `--ring #C9A227`.
 
-### Файловая структура — зафиксирована как в разделе 7.4 MASTERPROMPT, с уточнениями:
+Light: `--background #FAFAF8`, `--card/popover #FFFFFF`, `--foreground #111113`,
+`--muted-foreground #6B6B70`, `--border/input #E4E3DE`, `--primary #9C7A1C`,
+`--secondary/muted/accent #F0EFEB`, `--destructive #A33822`, `--ring #9C7A1C`.
+
+`--radius: 0.125rem` — минимальное скругление (бриф запрещает «чрезмерное скругление углов»).
+
+Шрифты через `next/font/google`: **Fraunces** (`--font-display`, editorial-заголовки),
+**Inter** (`--font-sans`, UI/текст), **IBM Plex Mono** (`--font-mono`, технические подписи,
+навигация, spec-строки).
+
+Кастомные токены в `@theme`: размеры `--text-display-sm/md/lg`, `--text-hero` (все на
+`clamp()`, поэтому hero не ломается на узких экранах); вертикальный ритм
+`--spacing-section-sm/md/lg` (4rem / 6rem / 10rem) → утилиты `py-section-md` и т.п.
+
+Кастомная утилита **`spec-label`** — мелкий mono uppercase с трекингом (технические подписи).
+Названа именно так, не `text-spec`: см. "Failed approaches".
+
+### Навигация — разрешённая неоднозначность брифа
+
+Раздел 3 MASTERPROMPT показывает пункт «Archive» в меню, но в списке роутов (раздел 7.5)
+маршрута `/archive` нет. Решение: **«Archive» — это заголовок группы, а не ссылка.**
+
+- Desktop: пять сущностных ссылок (Cars/Drivers/Teams/Circuits/Seasons), разделитель,
+  затем Search/About.
+- Mobile (полноэкранное меню): над сущностными ссылками стоит подпись `ARCHIVE` — ровно та
+  визуальная структура, что в брифе.
+
+Если пользователь имел в виду отдельную страницу `/archive` — это надо будет добавить явно.
+
+### Конвенции кода
+
+- Имена файлов — kebab-case (`site-header.tsx`), имена компонентов — PascalCase.
+- Импорт-алиас `@/*` от корня проекта. `src/` не используется.
+- Динамические роуты: `params` — это Promise (Next 15/16). Типы страниц берутся из
+  генерируемых глобалов: `PageProps<"/cars/[slug]">`, `LayoutProps<"/">`.
+  **Эти типы генерируются при `next build`/`next dev`** — на чистом клоне
+  `tsc --noEmit` упадёт с `Cannot find name 'PageProps'`, пока не выполнен билд. Это не баг.
+
+### Файловая структура (фактическая)
+
 ```
-apex-archive/
-  app/
-    (marketing)/
-      page.tsx                # landing (M3)
-      about/page.tsx
-    cars/page.tsx  [slug]/page.tsx
-    drivers/page.tsx  [slug]/page.tsx
-    teams/page.tsx  [slug]/page.tsx
-    circuits/page.tsx  [slug]/page.tsx
-    seasons/page.tsx  [year]/page.tsx
-    search/page.tsx
-    layout.tsx / loading.tsx / error.tsx / not-found.tsx  (root + по роут-группам)
-  components/
-    ui/            # shadcn primitives
-    archive/        # CarCard, DriverHero, TeamTimeline, CircuitLayout, StatBlock...
-    layout/         # Nav, MobileMenu, Footer
-  lib/
-    db/
-      schema.ts
-      queries/       # cars.ts, drivers.ts, teams.ts, circuits.ts, seasons.ts, search.ts
-      migrations/
-      seed/          # seed.ts + DATA_SOURCES.md
-    validation/       # zod schemas (query params, filters)
-    env.ts             # проверка обязательных env-переменных при старте
-    constants/         # nav items, design tokens as TS consts
-    utils/
-  types/                # DTO-типы, выведенные из zod/drizzle
-  drizzle.config.ts
-  .env.example
-  .gitignore
-  MASTERPROMPT.md
-  PROJECT_STATE.md
-  README.md
+app/
+  (marketing)/page.tsx            # landing (заглушка до M3)
+  (marketing)/about/page.tsx
+  cars|drivers|teams|circuits/page.tsx + [slug]/page.tsx
+  seasons/page.tsx + [year]/page.tsx
+  search/page.tsx
+  layout.tsx  loading.tsx  error.tsx  not-found.tsx
+  globals.css
+components/
+  ui/          button.tsx (shadcn), container.tsx (Container+Section), typography.tsx (Display/Eyebrow/Lede)
+  layout/      site-header.tsx, mobile-menu.tsx, site-footer.tsx, theme-toggle.tsx
+  archive/     placeholder-page.tsx (временный, удалить по мере готовности страниц)
+  theme-provider.tsx
+lib/
+  constants/navigation.ts
+  utils.ts     # cn()
 ```
-Отличие от исходного черновика раздела 7.4: `about` вложен в `(marketing)` route group
-вместе с landing (общий layout секции "маркетинговых" страниц); `api/` route handlers не
-заведены заранее — создаются по факту необходимости (например, если понадобится endpoint
-вне Server Actions), решение по необходимости на соответствующем milestone.
 
-### Роуты (MVP) — подтверждены без изменений от раздела 7.5:
-`/`, `/about`, `/cars`, `/cars/[slug]`, `/drivers`, `/drivers/[slug]`, `/teams`,
-`/teams/[slug]`, `/circuits`, `/circuits/[slug]`, `/seasons`, `/seasons/[year]`, `/search`.
+`lib/db/`, `lib/validation/`, `lib/env.ts`, `types/`, `drizzle.config.ts` — создаются на
+Milestone 2 (сейчас их нет, и это правильно).
 
 ## Database status
 
-Схема спроектирована (3NF, явные junction-таблицы), **не применена** — применение на
-Milestone 2. Все "статистические" поля (wins/poles/podiums/points и т.п.) **не
-дублируются** в отдельных `*_stats` таблицах — вычисляются агрегирующими запросами в data
-access layer поверх `results`/`races`/`driver_standings`/`constructor_standings`. Причина:
-избежать рассинхронизации денормализованных данных при MVP-масштабе (десятки-сотни строк),
-это соответствует принципу "не создавать лишнюю инфраструктуру без необходимости"
-(MASTERPROMPT, раздел 14).
+Схема спроектирована, **не применена** — реализация на Milestone 2. Ни Drizzle, ни Supabase
+ещё не установлены.
 
-Во всех сущностных таблицах — колонка `data_confidence` (`enum: 'verified' | 'placeholder' |
-'uncertain'`) для фиксации достоверности данных (раздел 6 MASTERPROMPT), плюс
-`created_at`/`updated_at` (timestamps).
+Все «статистические» показатели (wins/poles/podiums/points) **не денормализуются** в
+отдельные `*_stats` таблицы — считаются агрегирующими запросами в data access layer поверх
+`results` / `races` / `driver_standings` / `constructor_standings`. Причина: избежать
+рассинхронизации при MVP-масштабе (десятки-сотни строк).
+
+Во всех сущностных таблицах — `data_confidence` (`'verified' | 'placeholder' | 'uncertain'`,
+раздел 6 MASTERPROMPT) + `created_at` / `updated_at`.
 
 ### Таблицы
 
-**drivers**
-`id (uuid pk)`, `slug (unique)`, `full_name`, `nationality`, `date_of_birth`,
-`date_of_death (nullable)`, `career_start_year`, `career_end_year (nullable = active)`,
-`photo_url (nullable)`, `bio (text, nullable)`, `data_confidence`, `created_at`, `updated_at`.
+**drivers** — `id (uuid pk)`, `slug (unique)`, `full_name`, `nationality`, `date_of_birth`,
+`date_of_death?`, `career_start_year`, `career_end_year?` (null = активен), `photo_url?`,
+`bio?`, `data_confidence`, timestamps.
 
-**teams**
-`id (uuid pk)`, `slug (unique)`, `name`, `nationality`, `founded_year`,
-`dissolved_year (nullable)`, `logo_url (nullable)`, `base_location (nullable)`,
-`bio (text, nullable)`, `data_confidence`, `created_at`, `updated_at`.
+**teams** — `id`, `slug (unique)`, `name`, `nationality`, `founded_year`, `dissolved_year?`,
+`logo_url?`, `base_location?`, `bio?`, `data_confidence`, timestamps.
 
-**seasons**
-`id (uuid pk)`, `year (int, unique)`, `world_champion_driver_id (fk drivers, nullable)`,
-`constructors_champion_team_id (fk teams, nullable)`, `summary (text, nullable)`,
-`data_confidence`, `created_at`, `updated_at`.
+**seasons** — `id`, `year (int, unique)`, `world_champion_driver_id (fk drivers)?`,
+`constructors_champion_team_id (fk teams)?`, `summary?`, `data_confidence`, timestamps.
 
-**circuits**
-`id (uuid pk)`, `slug (unique)`, `name`, `country`, `location (nullable)`,
-`length_km (numeric)`, `turns (int)`, `laps_standard (int, nullable)`,
-`lap_record_time (nullable)`, `lap_record_holder_driver_id (fk drivers, nullable)`,
-`lap_record_year (int, nullable)`, `first_gp_year (int, nullable)`,
-`layout_image_url (nullable)`, `data_confidence`, `created_at`, `updated_at`.
+**circuits** — `id`, `slug (unique)`, `name`, `country`, `location?`, `length_km (numeric)`,
+`turns (int)`, `laps_standard?`, `lap_record_time?`, `lap_record_holder_driver_id (fk)?`,
+`lap_record_year?`, `first_gp_year?`, `layout_image_url?`, `data_confidence`, timestamps.
 
-**cars**
-`id (uuid pk)`, `slug (unique)`, `name`, `team_id (fk teams)`, `season_id (fk seasons)`,
-`chassis_name (nullable)`, `engine_manufacturer (nullable)`, `engine_config (nullable, e.g. "V10")`,
-`capacity_liters (numeric, nullable)`, `power_hp (int, nullable, ~приблизительно)`,
-`weight_kg (int, nullable)`, `image_url (nullable)`,
-`technical_breakdown (jsonb, nullable — {front_wing, suspension, engine, rear_wing, tyres, chassis})`,
-`data_confidence`, `created_at`, `updated_at`.
+**cars** — `id`, `slug (unique)`, `name`, `team_id (fk teams)`, `season_id (fk seasons)`,
+`chassis_name?`, `engine_manufacturer?`, `engine_config?` (напр. "V10"), `capacity_liters?`,
+`power_hp?` (приблизительное), `weight_kg?`, `image_url?`,
+`technical_breakdown (jsonb: front_wing, suspension, engine, rear_wing, tyres, chassis)?`,
+`data_confidence`, timestamps.
 
-**races**
-`id (uuid pk)`, `season_id (fk seasons)`, `circuit_id (fk circuits)`, `round_number (int)`,
-`name`, `date (date)`, `laps (int)`, `distance_km (numeric, nullable)`,
-`pole_position_driver_id (fk drivers, nullable)`, `fastest_lap_driver_id (fk drivers, nullable)`,
-`winner_driver_id (fk drivers, nullable)`, `winner_team_id (fk teams, nullable)`,
-`data_confidence`, `created_at`, `updated_at`.
+**races** — `id`, `season_id (fk)`, `circuit_id (fk)`, `round_number`, `name`, `date`,
+`laps`, `distance_km?`, `pole_position_driver_id (fk)?`, `fastest_lap_driver_id (fk)?`,
+`winner_driver_id (fk)?`, `winner_team_id (fk)?`, `data_confidence`, timestamps.
 
-**results**
-`id (uuid pk)`, `race_id (fk races)`, `driver_id (fk drivers)`, `team_id (fk teams)`,
-`car_id (fk cars, nullable)`, `grid_position (int, nullable)`, `finish_position (int, nullable = DNF)`,
-`status (enum: finished | dnf | dsq | dns)`, `points (numeric)`, `data_confidence`.
-Unique constraint: `(race_id, driver_id)`.
+**results** — `id`, `race_id (fk)`, `driver_id (fk)`, `team_id (fk)`, `car_id (fk)?`,
+`grid_position?`, `finish_position?` (null = сход), `status ('finished'|'dnf'|'dsq'|'dns')`,
+`points (numeric)`, `data_confidence`. Unique `(race_id, driver_id)`.
 
-**driver_standings** *(замена расплывчатой "championships" из раздела 7.3 —
-см. обоснование выше)*
-`id (uuid pk)`, `season_id (fk seasons)`, `driver_id (fk drivers)`, `team_id (fk teams)`,
-`position (int)`, `points (numeric)`, `wins (int)`, `podiums (int)`.
-Unique: `(season_id, driver_id)`.
+**driver_standings** — `id`, `season_id (fk)`, `driver_id (fk)`, `team_id (fk)`, `position`,
+`points`, `wins`, `podiums`. Unique `(season_id, driver_id)`.
 
-**constructor_standings**
-`id (uuid pk)`, `season_id (fk seasons)`, `team_id (fk teams)`, `position (int)`,
-`points (numeric)`, `wins (int)`.
-Unique: `(season_id, team_id)`.
+**constructor_standings** — `id`, `season_id (fk)`, `team_id (fk)`, `position`, `points`,
+`wins`. Unique `(season_id, team_id)`.
 
-**driver_team_seasons** *(junction: раздел 7.3, "при необходимости" — нужна с Milestone 5)*
-`id (uuid pk)`, `driver_id (fk drivers)`, `team_id (fk teams)`, `season_id (fk seasons)`,
-`car_id (fk cars, nullable)`. Индекс по `(driver_id, season_id)`.
+**driver_team_seasons** (junction) — `id`, `driver_id (fk)`, `team_id (fk)`,
+`season_id (fk)`, `car_id (fk)?`. Индекс по `(driver_id, season_id)`.
 
-**articles** *(схема — сейчас; UI — только Milestone 14, "Stories")*
-`id (uuid pk)`, `slug (unique)`, `title`, `subtitle (nullable)`, `body (text, markdown)`,
-`cover_image_url (nullable)`, `tags (text[], nullable)`, `published_at (timestamp, nullable)`,
-`created_at`, `updated_at`. Без `data_confidence` — редакционный контент, не статистика.
+**articles** (схема сейчас, UI — Milestone 14) — `id`, `slug (unique)`, `title`, `subtitle?`,
+`body (markdown)`, `cover_image_url?`, `tags (text[])?`, `published_at?`, timestamps.
+Без `data_confidence` — это редакционный контент, не статистика.
 
-### Full-Text Search (подготовка, раздел 7.9)
+### Обоснование: почему не одна таблица `championships`
+
+Раздел 7.3 MASTERPROMPT называет таблицу `championships`. Реализуем её как **две** —
+`driver_standings` и `constructor_standings`. Одна таблица потребовала бы полиморфного FK
+(entity_id, указывающий то на драйвера, то на команду), что противоречит требованию
+нормализации из того же раздела. Кроме того, для страницы сезона (раздел 4.6) нужны полные
+standings, а не только чемпион.
+
+### FTS (подготовка к Milestone 9)
+
 На `drivers.full_name`, `teams.name`, `cars.name`, `circuits.name`, `seasons.summary` —
-`tsvector`-генерируемые колонки (`generated always as`) + GIN-индексы. Точные weight-настройки
-(`setweight`, приоритет полей) фиксируются на Milestone 2 при реализации.
+генерируемые `tsvector`-колонки + GIN-индексы. Веса (`setweight`) определить на Milestone 2.
 
-### Отложено намеренно (не создавать сейчас)
-`users`, `favorites` — только Milestone 14 (User accounts/Favorites), до этого не нужны.
-`car_stats` / `driver_stats` / `team_stats` / `circuit_stats` — не создаются вообще при
-текущем масштабе данных (см. обоснование выше); пересмотреть, если объём данных вырастет
-настолько, что агрегирующие запросы станут узким местом производительности (маловероятно
-для MVP с десятками-сотнями строк).
+### Намеренно не создаём
+
+`users` / `favorites` — только Milestone 14. `car_stats` / `driver_stats` / `team_stats` /
+`circuit_stats` — не создаём вообще (см. выше).
 
 ## Routes implemented
 
-- none (только зафиксированы в плане, раздел "Architecture decisions" выше)
+Все 13 MVP-роутов существуют и рендерятся (заглушки, без данных):
+`/`, `/about`, `/cars`, `/cars/[slug]`, `/drivers`, `/drivers/[slug]`, `/teams`,
+`/teams/[slug]`, `/circuits`, `/circuits/[slug]`, `/seasons`, `/seasons/[year]`, `/search`.
+
+Плюс `app/not-found.tsx`, `app/error.tsx`, `app/loading.tsx` (корневые состояния).
+Пер-секционные `loading/error` — Milestone 11.
 
 ## Components implemented
 
-- none
+- `layout/site-header.tsx` — sticky-шапка, desktop-навигация с активным состоянием
+  (`aria-current`), разделитель между группами.
+- `layout/mobile-menu.tsx` — полноэкранное меню на Radix Dialog (focus trap, Esc,
+  блокировка скролла, portal). Закрывается по клику на ссылку.
+- `layout/site-footer.tsx` — editorial-футер с сеткой ссылок.
+- `layout/theme-toggle.tsx` — переключатель темы без состояния монтирования.
+- `ui/button.tsx` — shadcn.
+- `ui/container.tsx` — `Container` (max-width + адаптивные отступы), `Section` (вертикальный ритм).
+- `ui/typography.tsx` — `Display` (4 размера через cva), `Eyebrow`, `Lede`.
+- `archive/placeholder-page.tsx` — временная оболочка страницы; удаляется по мере
+  реализации реальных страниц.
+- `theme-provider.tsx` — обёртка next-themes.
 
 ## Data implemented
 
-- none. Реальные данные F1 не загружены. Правило "не выдумывать статистику" — см.
-  MASTERPROMPT.md раздел 6. На Milestone 2 — курируемый seed-набор (15–30 cars, 15–30
-  drivers, 8–10 teams, 10–15 circuits, несколько seasons) с обязательной пометкой
-  `data_confidence` и источника в `DATA_SOURCES.md`.
+- none. Реальные данные F1 не загружены, БД не подключена. Правило «не выдумывать
+  статистику» — MASTERPROMPT раздел 6. На Milestone 2 — курируемый seed-набор
+  (15–30 cars, 15–30 drivers, 8–10 teams, 10–15 circuits, несколько seasons) с обязательной
+  пометкой `data_confidence` и источников в `DATA_SOURCES.md`.
+- Заглушечные тексты на страницах — это описания разделов, а не выдуманная статистика.
+  Ни одного числа (побед, поулов, титулов) в коде нет намеренно.
 
 ## Known bugs
 
-- none
+- none блокирующих.
+
+Наблюдения, не требующие действий сейчас:
+
+- npm выдаёт deprecation warning на `eslint@9.39.5` — это транзитивно требуемая
+  `eslint-config-next@16.3.4` версия. Линт работает, не менять без причины.
+- npm сообщает, что postinstall-скрипт `unrs-resolver` не одобрен (`allow-scripts`).
+  На линт/сборку не влияет. Если появятся ошибки резолва импортов в ESLint — это первый
+  подозреваемый.
+- Программный `window.scrollTo` при открытом мобильном меню всё ещё двигает страницу
+  (react-remove-scroll перехватывает колесо/тач, но не программный скролл). На реальное
+  поведение пользователя не влияет.
 
 ## Failed approaches
 
-- none
+1. **`create-next-app` прямо в каталоге проекта** — CLI отказывается работать в непустой
+   директории, а там уже лежали `MASTERPROMPT.md` и `PROJECT_STATE.md`. Попытка удалить их
+   ради генерации была заблокирована. **Решение:** сгенерировать скелет в scratchpad
+   (`--skip-install`), скопировать в проект, затем `npm install`. Ничего не удалялось.
+   Так же поступать и в будущем, если понадобится ре-скаффолдинг.
+
+2. **Кастомная утилита с именем `text-spec`** — `cn()` (tailwind-merge) считал её классом
+   цвета текста и выбрасывал при слиянии с `text-muted-foreground`, из-за чего eyebrow
+   терял mono/uppercase. Симптом был виден только в браузере: типографика «молча» ломалась.
+   **Решение:** переименовать в `spec-label`. **Правило на будущее: не начинать имена
+   кастомных утилит с префиксов Tailwind (`text-`, `bg-`, `border-` …).**
+
+3. **Паттерн `useEffect(() => setMounted(true), [])` в переключателе темы** — правило
+   `react-hooks/set-state-in-effect` из `eslint-config-next@16` считает это ошибкой.
+   **Решение:** убрать состояние целиком — какая иконка видна, решает CSS (`dark:hidden` /
+   `hidden dark:block`), `aria-label` статичный. Проще и без рассинхронизации гидрации.
+
+4. **Закрытие мобильного меню через `useEffect` по смене `pathname`** — то же правило линта.
+   **Решение:** `onClick={close}` на каждой ссылке (обработка события вместо синхронизации
+   состояния). Побочный эффект: меню не закроется по кнопке «назад» в браузере — принято
+   как допустимый компромисс.
+
+5. **Radix `Dialog` без `Dialog.Overlay`** — фон продолжал скроллиться под открытым меню.
+   Блокировка скролла в Radix живёт **в Overlay**, а не в Content. **Решение:** отрендерить
+   `Dialog.Overlay`. Проверено: `body { overflow: hidden }` появляется.
 
 ## Why they failed
 
-- n/a
+См. пояснения в каждом пункте выше — все пять диагностированы и закрыты, ни один не
+остаётся открытой проблемой.
 
 ## Environment / configuration
 
-- Репозиторий: пустая директория, **git не инициализирован** (`git init` — Milestone 1).
-- Node.js: v24.14.0, npm: 11.18.0, git: 2.53.0 доступны локально (Windows 11).
-- Supabase project URL: https://supabase.com/dashboard/project/graglvzassyzsyedraex
-- Vercel account: vercel.com/nikita-7472
+- Git инициализирован, ветка `main`. Remote **не** настроен (GitHub-репозиторий ещё не
+  подключён — сделать на Milestone 13 или раньше по команде пользователя).
+- `.gitignore` покрывает `node_modules`, `.next`, `.env*` (с исключением `!.env.example`),
+  `.vercel`, логи, `.claude`.
+- `.env.example` создан, содержит только имена переменных с комментариями. Реальных
+  значений нет нигде в репозитории. `.env.local` не создавался — приложению пока не нужны
+  переменные.
+- Node.js v24.14.0, npm 11.18.0, git 2.53.0 (Windows 11).
+- Supabase project: https://supabase.com/dashboard/project/graglvzassyzsyedraex (не подключён)
+- Vercel account: vercel.com/nikita-7472 (не подключён)
 - GitHub owner: NikitaDmitrenco
-- `.env.example` — ещё не создан физически; список переменных зафиксирован (создать файл на
-  Milestone 1):
-  ```
-  DATABASE_URL=
-  NEXT_PUBLIC_SUPABASE_URL=
-  NEXT_PUBLIC_SUPABASE_ANON_KEY=
-  SUPABASE_SERVICE_ROLE_KEY=
-  NEXT_PUBLIC_SITE_URL=
-  OPENAI_API_KEY=
-  ```
-  (`OPENAI_API_KEY` понадобится только на Milestone 14, но заводим переменную в
-  `.env.example` заранее, значение не требуется до тех пор.)
+- `.claude/launch.json` — локальный конфиг запуска dev-сервера для Claude Code, в gitignore.
 
 ## Deployment status
 
-- Не задеплоено. Vercel-проект не подключён.
+- Не задеплоено. Vercel-проект не подключён, remote у git отсутствует.
 
 ## Git status
 
-- Репозиторий не инициализирован (`git init` предстоит на Milestone 1).
+- Ветка `main`, работа велась прямо в ней (правило «не работать в main» из раздела 8
+  вступает в силу с появлением CI/деплоя, то есть после Milestone 13; до этого прямые
+  коммиты в `main` допустимы).
+- Коммиты Milestone 1: bootstrap-коммит + коммит foundation (см. `git log`).
 
 ## Next milestone
 
-Milestone 1 — Project Foundation:
-- `create-next-app` (Next.js 16.3.4, TS, Tailwind, App Router), проверить фактически
-  разрешившиеся версии зависимостей и записать их сюда.
-- `git init` + `.gitignore` + первый коммит.
-- shadcn/ui init, базовые UI-примитивы под design tokens, зафиксированные выше.
-- Root layout, next-themes (dark по умолчанию), шрифты (Fraunces/Inter/IBM Plex Mono через
-  `next/font`).
-- Навигация (desktop + fullscreen mobile menu), footer.
-- Пустые placeholder-страницы для всех MVP-роутов.
-- ESLint/Prettier, `tsc --noEmit`, `next build` — все должны проходить.
+**Milestone 2 — Database & Data Layer.** Начинать только по команде пользователя.
+
+- Установить `drizzle-orm`, `drizzle-kit`, `@supabase/supabase-js`, `zod`
+  (проверить актуальные стабильные версии перед установкой).
+- `lib/env.ts` — валидация обязательных переменных окружения при старте.
+- `lib/db/schema.ts` по схеме из раздела "Database status" выше.
+- `drizzle.config.ts`, генерация и применение миграций к Supabase.
+- Курируемый seed-набор + `DATA_SOURCES.md` с источником по каждой группе данных.
+- `lib/db/queries/*` — типизированный data access layer (list / getBySlug / getByFilters)
+  для cars, drivers, teams, circuits, seasons.
+- `tsvector`-колонки и GIN-индексы (задел под Milestone 9).
+
+**Требуется от пользователя перед Milestone 2:** `DATABASE_URL` и ключи Supabase в
+`.env.local`. Claude не запрашивает и не вводит реальные секреты — пользователь заполняет
+`.env.local` сам по шаблону `.env.example`.
 
 ## Important notes for the next Claude session
 
-- Milestone 0 завершён: архитектура, схема БД (не применена), файловая структура, роуты,
-  design tokens, env-переменные — задокументированы выше. Кода приложения ещё нет,
-  `package.json` не создан, git не инициализирован.
-- **Next.js 16.3.4** — не 15.x, как было в исходном черновике брифа. Причина — правило
-  раздела 2 MASTERPROMPT: если на момент работы в registry уже стабильный (не canary) Next 16,
-  использовать его. Если к моменту Milestone 1 это изменится (Next 16 окажется нестабильным
-  на практике при `create-next-app`) — зафиксировать проблему в "Failed approaches" и
-  откатиться на последнюю 15.x с объяснением.
-- TypeScript 7.0.2 зафиксирован по dist-tag `latest`, но не проверен практически с
-  `create-next-app`/shadcn CLI — первая реальная проверка будет на Milestone 1.
-- "championships" из раздела 7.3 MASTERPROMPT сознательно реализована как две таблицы —
-  `driver_standings` + `constructor_standings` — вместо одной полиморфной. Это соответствует
-  требованию нормализации (раздел 7.3: "явные junction-таблицы для many-to-many"), полиморфный
-  FK внутри одной таблицы этому противоречил бы.
-- Ждать команду пользователя (`продолжать` или явное указание) перед стартом Milestone 1.
+- Прочитать MASTERPROMPT.md целиком, затем этот файл, затем `git log --oneline`.
+- **`npm run typecheck` на свежем клоне упадёт**, пока не выполнен `npm run build` —
+  `PageProps`/`LayoutProps` генерируются сборкой. Это не баг, не «чинить».
+- **Не менять местами `--primary` и `--accent`** — см. "Именование токенов".
+- **Не именовать кастомные CSS-утилиты с префиксов Tailwind** — см. "Failed approaches" п.2.
+- Правило линта `react-hooks/set-state-in-effect` активно: `setState` внутри `useEffect`
+  будет ошибкой. Обрабатывать события, а не синхронизировать состояние.
+- `components/archive/placeholder-page.tsx` — временный. Удалять его использования по мере
+  реализации настоящих страниц, а сам файл — когда не останется ни одного использования.
+- Дизайн намеренно сдержанный: минимальное скругление, тонкие линии, много воздуха,
+  без glassmorphism/neon/красного «F1-стиля». Не «оживлять» его декоративными эффектами.
+- Ждать команду пользователя перед стартом Milestone 2.

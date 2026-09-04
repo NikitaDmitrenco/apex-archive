@@ -1,36 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Apex Archive
 
-## Getting Started
+**The machines. The drivers. The circuits. The stories.**
 
-First, run the development server:
+A premium interactive digital archive of Formula 1 — cars, drivers, teams, circuits and
+seasons, connected so you can navigate the sport's history entity by entity.
+
+---
+
+## Stack
+
+| Layer      | Technology                                      |
+| ---------- | ----------------------------------------------- |
+| Framework  | Next.js 16 (App Router, Turbopack)              |
+| UI runtime | React 19                                        |
+| Language   | TypeScript (strict)                             |
+| Styling    | Tailwind CSS 4 (CSS-first config)               |
+| Components | shadcn/ui on Radix primitives                   |
+| Theming    | next-themes (dark by default)                   |
+| Database   | PostgreSQL via Supabase — _from Milestone 2_    |
+| ORM        | Drizzle ORM — _from Milestone 2_                |
+| Deployment | Vercel                                          |
+
+## Requirements
+
+- Node.js `>=20.9.0` (developed on v24)
+- npm
+
+## Getting started
 
 ```bash
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app runs at http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+No environment variables are required yet — the app has no database connection until
+Milestone 2. Copy the template anyway so the file exists when it is needed.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
 
-## Learn More
+| Script                 | Purpose                                    |
+| ---------------------- | ------------------------------------------ |
+| `npm run dev`          | Development server                         |
+| `npm run build`        | Production build                           |
+| `npm run start`        | Serve the production build                 |
+| `npm run lint`         | ESLint                                     |
+| `npm run typecheck`    | `tsc --noEmit`                             |
+| `npm run format`       | Format with Prettier                       |
+| `npm run format:check` | Verify formatting without writing          |
 
-To learn more about Next.js, take a look at the following resources:
+`npm run typecheck` needs generated route types, so run `npm run build` (or start the dev
+server) at least once after cloning.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+See [`.env.example`](.env.example) for the full list with descriptions. Real values belong
+in `.env.local` locally and in Vercel Environment Variables in production — never in the
+repository.
 
-## Deploy on Vercel
+| Variable                        | Needed from  |
+| ------------------------------- | ------------ |
+| `DATABASE_URL`                  | Milestone 2  |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Milestone 2  |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Milestone 2  |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Milestone 2  |
+| `NEXT_PUBLIC_SITE_URL`          | Milestone 11 |
+| `OPENAI_API_KEY`                | Milestone 14 |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Database migrations
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Not yet applicable. Drizzle schema, migrations and the seed script arrive in Milestone 2;
+this section will document `drizzle-kit generate` / `migrate` and the seed command then.
+
+## Project structure
+
+```
+app/            routes (App Router)
+  (marketing)/  landing and about
+  cars/ drivers/ teams/ circuits/ seasons/ search/
+components/
+  ui/           shadcn primitives and shared design primitives
+  archive/      domain components
+  layout/       header, footer, mobile menu
+lib/
+  constants/    navigation and other static content
+  utils.ts      cn() helper
+```
+
+## Deployment
+
+The project targets Vercel. Connecting the repository and entering production secrets is
+done manually by the repository owner — see Milestone 13 in `MASTERPROMPT.md`.
+
+## Project documents
+
+- [`MASTERPROMPT.md`](MASTERPROMPT.md) — the specification: scope, stack, milestones and
+  working rules. The source of truth.
+- [`PROJECT_STATE.md`](PROJECT_STATE.md) — current state, decisions made, and what the next
+  session needs to know.
