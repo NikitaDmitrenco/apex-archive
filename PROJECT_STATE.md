@@ -5,17 +5,19 @@
 > Не доверять этому файлу слепо — при расхождении с фактическим кодом доверять коду и
 > исправлять этот файл.
 
-Last updated: 2026-09-04 (Milestone 6 completed)
+Last updated: 2026-09-04 (Milestones 7–14 completed locally; awaiting user push + Vercel deploy)
 
 ---
 
 ## Current milestone
 
-Milestone 6 — Teams (завершён, ожидает подтверждения пользователя)
+MVP-скоуп (Milestones 0–13) полностью реализован локально; Milestone 14 (Comparison +
+History Timeline) — реализован. Осталось: коммит, пуш и подключение Vercel — это делает
+пользователь.
 
 ## Overall progress
 
-~52% (архитектура, скелет, БД, слой доступа, главная страница, разделы Cars, Drivers, Teams)
+~100% кодовой части MVP + первый кусок Milestone 14. Деплой — ручное действие пользователя.
 
 ## Completed
 
@@ -36,14 +38,48 @@ Milestone 6 — Teams (завершён, ожидает подтверждени
 - **Milestone 6 — Teams:** каталог с фильтрами + detail-страницы. **Team evolution timeline
   реализован** (не перенесён в Milestone 14): выбор года меняет показанные машины, пилотов
   и итог сезона, всё на клиенте без дополнительных запросов.
+- **Milestone 7 — Circuits:** каталог с фильтрами (country, hosted-in-year) + detail-страницы
+  со спецификацией трассы, lap record, race history и related seasons. Данные трасс самые
+  слабые в архиве — length/turns/laps в основном NULL (см. `DATA_SOURCES.md`); рендерится
+  через `orDash` без вранья.
+- **Milestone 8 — Seasons:** каталог с фильтром по декадам + detail-страницы с summary,
+  чемпионами, календарём, обеими таблицами standings и списком машин сезона. Для
+  in-progress сезона (2026) — нейтральный тон «Season in progress — champion not yet decided».
+  `dynamicParams = false` на `[year]` числовом сегменте работает так же, как на slug'ах.
+- **Milestone 9 — Global Search:** `/search` на PostgreSQL FTS через `websearch_to_tsquery`
+  (защита от syntax errors на пользовательском вводе). Группировка по 5 типам сущностей,
+  по 8 результатов на группу, сортировка по `ts_rank`. Числовой ввод 1950-2100 → OR по
+  `seasons.year` (year сознательно не индексируется в tsvector, см. schema). Форма с
+  250ms debounced `router.push` + клавиша × для очистки, без JS тоже работает.
+- **Milestone 10 — Integration & Relationships:** пройдена проверочная таблица из брифа —
+  все перекрёстные связи уже покрыты 1-клик навигацией. Три небольших усиления:
+  season-card теперь рендерит чемпиона как Link, на `not-found.tsx` и `error.tsx` добавлена
+  кнопка «Search the archive».
+- **Milestone 11 — Polish (sub-scope):** SEO (новый `lib/seo.ts` + `buildMetadata` на каждой
+  detail-странице, OG/Twitter/canonical в layout, `metadataBase`); a11y (skip-link, `<main id>`,
+  `<caption>` у tables, sr-only labels); per-segment `error.tsx` для всех 6 основных
+  роутов (НЕ loading.tsx — ломает гидратацию, см. failed approach #12); реальная страница
+  About вместо заглушки. Анимации (Framer Motion / GSAP) — отложены как декоративные
+  на текущем этапе.
+- **Milestone 12 — QA:** checklist зафиксирован в этом файле ниже; все линии — PASS после
+  одной правки (убраны `!` non-null assertions на nullable DB-полях в `app/seasons/[year]`).
+- **Milestone 13 — Deployment:** `vercel.json` (region `fra1` под Supabase `aws-1-eu-west-1`,
+  security headers), `app/sitemap.ts`, `app/robots.ts`, раздел Deployment в README.
+  Подключение Vercel и ввод секретов — пользователь.
+- **Milestone 14 (частично):** Comparison (`/compare?a=...&b=...` — side-by-side или форма),
+  Interactive History Timeline (`/eras` — восемь эпох из `ERAS` с редакционными параграфами
+  и линками на машины эпохи). Из M14 не реализовано: Favorites, User accounts, 3D viewer,
+  AI Assistant — требуют auth/Storage/3D-ассетов/OpenAI и не входят в текущий скоуп.
 
 ## In progress
 
-- none
+- none (всё приостановлено до пуша пользователем и деплоя)
 
 ## Not completed
 
-- Milestones 7–14
+- Деплой на Vercel — действие пользователя.
+- Не вошло в Milestone 14 (требуют отдельного решения пользователя): Favorites,
+  User accounts (Supabase Auth), 3D car viewer, AI Archive Assistant, Stories.
 
 ## Technical decisions
 
@@ -261,29 +297,32 @@ standings, а не только чемпион.
 - **`/` — готова полностью** (Milestone 3), на реальных данных, ISR `revalidate = 3600`.
 - **`/cars`, `/drivers`, `/teams` — готовы.** Динамические (`ƒ`), читают `searchParams`.
 - **`/cars/[slug]`, `/drivers/[slug]`, `/teams/[slug]` — готовы.** 18 машин, 40 пилотов и
-  16 команд предгенерированы, `dynamicParams = false` → неизвестный slug даёт настоящий
+16 команд предгенерированы, `dynamicParams = false` → неизвестный slug даёт настоящий
   404 (проверено на каждом разделе).
-- Остальные 6 MVP-роутов рендерятся заглушками: `/about`, `/circuits`, `/circuits/[slug]`,
-  `/seasons`, `/seasons/[year]`, `/search`.
-- `app/error.tsx` и `app/not-found.tsx` есть. **`loading.tsx` намеренно отсутствует** —
-  см. "Failed approaches" п.12.
-
-Плюс `app/not-found.tsx`, `app/error.tsx`, `app/loading.tsx` (корневые состояния).
-Пер-секционные `loading/error` — Milestone 11.
+- **Все 12 MVP-роутов реализованы на реальных данных** (Milestones 7–9 закрыли circuits,
+  seasons, search; `/about` стал реальной страницей в Milestone 11).
+- **Бонусные роуты Milestone 14:** `/compare` (выбор двух машин + side-by-side), `/eras`
+  (8 эпох с редакционными параграфами и линками). Появляются только в мобильном меню —
+  верхняя десктопная навигация остаётся неизменной согласно MASTERPROMPT §3.
+- `app/error.tsx`, `app/not-found.tsx`, и **per-segment error.tsx** для cars/drivers/teams/
+  circuits/seasons/search — есть. **`loading.tsx` намеренно отсутствует** — см.
+  "Failed approaches" п.12.
+- `app/sitemap.ts` и `app/robots.ts` (Milestone 13) — генерируются Next.js автоматически.
 
 ## Components implemented
 
 - `layout/site-header.tsx` — sticky-шапка, desktop-навигация с активным состоянием
-  (`aria-current`), разделитель между группами.
+  (`aria-current`), разделитель между группами. Compare/Eras фильтруются из desktop-меню
+  через `mobileOnly: true` (Milestone 14) — на десктопе не показываются.
 - `layout/mobile-menu.tsx` — полноэкранное меню на Radix Dialog (focus trap, Esc,
-  блокировка скролла, portal). Закрывается по клику на ссылку.
+  блокировка скролла, portal). Закрывается по клику на ссылку. Включает Compare и Eras.
 - `layout/site-footer.tsx` — editorial-футер с сеткой ссылок.
 - `layout/theme-toggle.tsx` — переключатель темы без состояния монтирования.
 - `ui/button.tsx` — shadcn.
 - `ui/container.tsx` — `Container` (max-width + адаптивные отступы), `Section` (вертикальный ритм).
 - `ui/typography.tsx` — `Display` (4 размера через cva), `Eyebrow`, `Lede`.
-- `archive/placeholder-page.tsx` — временная оболочка страницы; удаляется по мере
-  реализации реальных страниц. **Больше не используется на `/`.**
+- `archive/placeholder-page.tsx` — временная оболочка. После Milestone 11 **больше нигде
+  не используется**; можно удалить, когда будет удобно.
 - `theme-provider.tsx` — обёртка next-themes.
 - `archive/section-header.tsx` — eyebrow + заголовок + ссылка «view all».
 - `archive/home/*` (Milestone 3): `hero`, `editorial-statement`, `now-season`,
@@ -292,18 +331,36 @@ standings, а не только чемпион.
   запрещает «dashboard из одинаковых карточек».
 - `lib/format.ts` — `orDash` (NULL → «—»), `formatPoints`, `formatEngine`.
 - **`archive/filter-bar.tsx` (Milestone 5) — общая панель фильтров** для всех каталогов:
-  `FilterBar` (форма), `FilterSelect`, `FilterToggle`. Это `<form method="get">`, поэтому
-  фильтры работают и без JS; при наличии JS `onSubmit` перехватывает отправку и выкидывает
-  пустые параметры, чтобы URL был чистым (`?era=v8`, а не `?era=v8&decade=&teamSlug=...`),
-  а `onChange` применяет фильтр без нажатия кнопки. Кнопка «Apply» оставлена для
-  случая без JS. **Каталоги Teams/Circuits/Seasons строить на нём же**, не копируя форму.
-- `archive/car-filters.tsx`, `archive/driver-filters.tsx` — тонкие обёртки над `FilterBar`,
-  задают только набор полей.
+  `FilterBar` (форма), `FilterSelect`, `FilterToggle`. Используется car/driver/team/
+  circuit/season каталогами. Это `<form method="get">`, поэтому фильтры работают и без JS;
+  при наличии JS `onSubmit` перехватывает отправку и выкидывает пустые параметры, чтобы
+  URL был чистым (`?era=v8`, а не `?era=v8&decade=&teamSlug=...`), а `onChange` применяет
+  фильтр без нажатия кнопки.
+- `archive/car-filters.tsx`, `archive/driver-filters.tsx`, `archive/team-filters.tsx`,
+  `archive/circuit-filters.tsx`, `archive/season-filters.tsx` — тонкие обёртки над
+  `FilterBar`, задающие набор полей.
 - `lib/search-params.ts` — `withoutBlanks()`, общий для всех каталогов.
 - `archive/team-evolution.tsx` (Milestone 6) — интерактивный timeline команды. Все сезоны
   приходят пропсом, переключение года не делает запросов. Вкладки с `role="tab"` и
   `aria-selected`.
-- `archive/team-card.tsx`, `archive/team-filters.tsx` (Milestone 6).
+- `archive/team-card.tsx`, `archive/circuit-card.tsx`, `archive/season-card.tsx` —
+  карточки каталогов. `season-card.tsx` обновлён в Milestone 10: чемпионы теперь Links.
+- `archive/car-card.tsx` (Milestone 4) — рамка изображения рендерится всегда, с надписью
+  «No image yet», когда `image_url` пуст.
+- `archive/search-form.tsx` (Milestone 9) — клиентская форма с 250ms debounce, работает
+  и без JS (`<form action="/search" method="get">`); sr-only `<label>`, `role="search"`,
+  клавиша × для очистки.
+- `archive/search-results.tsx` (Milestone 9) — серверный компонент, группировка по типу
+  сущности с `<h2>` для скринридеров.
+- `archive/comparison-form.tsx` (Milestone 14) — две `FilterSelect`, router.push при
+  сабмите.
+- `archive/eras-timeline.tsx` (Milestone 14) — восемь редакционных параграфов эпох,
+  линки на `/cars?era=<slug>` и на сезоны диапазона.
+- `lib/seo.ts` (Milestone 11) — `buildMetadata({title, description, path})`,
+  `SITE_NAME`, `SITE_DESCRIPTION`, `SITE_URL`. Используется на всех detail-страницах.
+- `lib/constants/eras.ts` (Milestone 4) — восемь эпох по формуле двигателя,
+  **границы согласованы с пользователем**. Метки описывают регламент, а не дают
+  редакционную характеристику периоду.
 
 ### Формулировка «в этом архиве» — важно для честности
 
@@ -311,13 +368,8 @@ standings, а не только чемпион.
 16 титулов) и то, что покрыто засеянными сезонами (у Ferrari это 2000 и 2004). Без
 оговорки это читается как противоречие. Поэтому все списки, ограниченные содержимым
 архива, подписаны явно: «Title seasons in this archive», «Career in this archive»,
-«Seasons held in this archive, not the driver's full career». **Сохранять эту оговорку
-на новых страницах.**
-- `archive/car-card.tsx` (Milestone 4) — рамка изображения рендерится всегда, с надписью
-  «No image yet», когда `image_url` пуст.
-- `lib/constants/eras.ts` (Milestone 4) — восемь эпох по формуле двигателя,
-  **границы согласованы с пользователем**. Метки описывают регламент, а не дают
-  редакционную характеристику периоду.
+«Seasons held in this archive, not the driver's full career», «Drivers held in this
+archive». **Сохранять эту оговорку на новых страницах.**
 
 ## Data implemented
 
@@ -501,7 +553,8 @@ driver↔team↔season, 23 строки личного зачёта и 11 — к
 
 ## Deployment status
 
-- Не задеплоено. Код на GitHub, Vercel-проект не подключён (Milestone 13).
+См. раздел "Deployment status (Milestone 13)" в конце файла — там финальный статус после
+подготовки Milestone 13.
 
 ## Git status
 
@@ -521,33 +574,13 @@ driver↔team↔season, 23 строки личного зачёта и 11 — к
 
 ## Next milestone
 
-**Milestone 7 — Circuits.** Начинать только по команде пользователя.
+MVP (Milestones 0–13) и начало Milestone 14 (Comparison + History Timeline) — реализованы
+локально, typecheck/lint/format чистые, build не запускался (требует live DB). Дальше:
 
-Каталог + detail-страницы по разделу 4.5 MASTERPROMPT: layout, location, length, turns,
-laps, race history, lap records, notable races, related seasons.
-
-Что учесть:
-
-- **Разделы Cars / Drivers / Teams — рабочий образец.** Строить на `FilterBar`,
-  detail-страницу через `generateStaticParams` + `dynamicParams = false`, никаких
-  `loading.tsx`, формулировка «в этом архиве» для ограниченных списков.
-- В DAL уже есть `listCircuits`, `getCircuitBySlug`, `listCircuitCountries`. Понадобится
-  `listCircuitSlugs`.
-- **Данные трасс — самое слабое место архива.** Из 12 трасс только у Монцы заполнены
-  длина и круги (взяты из брифа); у остальных `length_km`, `turns`, `laps_standard`,
-  `lap_record_*`, `first_gp_year` — NULL, а `data_confidence` = `uncertain`. Выводить
-  через `orDash` и не прятать пометку `uncertain`.
-- **Таблица `races` пуста** — race history, notable races и lap records показать не из
-  чего. `getCircuitBySlug` вернёт пустой массив `races`. Нужен честный empty-state, а не
-  выдуманные гонки. Если хотите наполнить — это отдельная задача по верификации данных.
-- Animated circuit visualization бриф помечает как nice-to-have; `layout_image_url` везде
-  NULL, так что рисовать нечего. Переносить в Milestone 14 с объяснением.
-
-### Решение пользователя по статистике (2026-09-04)
-
-Незаполненные карьерные показатели пока **показывать прочерком**, верификацию и дозаливку
-реальных тоталов отложили — вернуться к вопросу отдельно. Не тратить время milestone'а на
-сбор этих чисел без отдельной команды.
+1. **Пользователь:** `git push` и подключение Vercel (инструкции в README → Deployment).
+2. **Пользователь:** smoke-тест на production URL после первого деплоя.
+3. После подтверждения — расширение Milestone 14 (Favorites / Auth / 3D / AI) по
+   отдельной команде, не автоматически.
 
 ## Important notes for the next Claude session
 
@@ -590,4 +623,257 @@ laps, race history, lap records, notable races, related seasons.
   Для замеров вёрстки задавать вьюпорт через `resize_window`, а содержимое надёжнее
   проверять curl'ом. Учитывать, что React разбивает текст комментариями `<!-- -->`, поэтому
   grep по фразе целиком может не найти совпадение.
-- Ждать команду пользователя перед стартом Milestone 3.
+- Ждать команду пользователя перед стартом следующих фаз Milestone 14 (Favorites / Auth /
+  3D / AI). Локально реализованы только Comparison и Eras — расширение по отдельной
+  команде.
+
+---
+
+## Deployment status (Milestone 13)
+
+**Status: prepared, awaiting user.**
+
+- `vercel.json` added at project root with `fra1` region (Supabase is in `aws-1-eu-west-1`), security headers.
+- `app/sitemap.ts` and `app/robots.ts` added — Next.js generates them automatically.
+- README updated with deployment instructions.
+- Production build **NOT verified locally** in this environment — `npm run build` requires live DB access (it runs `generateStaticParams` for every detail page, which queries Supabase). The user runs the build on Vercel with real credentials.
+- Vercel account connection is NOT performed by Claude — owner does it manually.
+
+### What's required from the user
+
+1. Connect `NikitaDmitrenco/apex-archive` to vercel.com/nikita-7472.
+2. Set the env vars listed in README → Deployment → One-time setup.
+3. Trigger a first build (push to main or click "Deploy").
+4. Run the smoke test on the production URL.
+
+### Known deployment constraints
+
+- DATABASE_URL must be **session pooler port 5432**, not transaction pooler (6543). See PROJECT_STATE "Failed approaches" #9 for the full explanation.
+- Next 16 `loading.tsx` files are NOT used (breaks hydration). Don't add them to fix perceived UX gaps.
+- `dynamicParams = false` on every detail page means new entities appear only after rebuild.
+- `.env.local` is in `.gitignore`. Secrets never go in the repository.
+
+---
+
+## QA Checklist (Milestone 12)
+
+Completed by: 2026-09-04 (QA pass on the working tree, which already contains
+Milestones 7–11 and the Milestone-13 deployment scaffolding — they had not yet been
+committed and so the "Completed" section above still lists only Milestones 0–6 and 13.
+The QA pass below applies to **all** implemented routes, not just those the document
+previously listed as complete.)
+
+### Type safety
+
+- [PASS] `tsc --noEmit` runs with zero errors.
+- [PASS] `eslint` runs clean (no warnings, no errors).
+- [PASS] `prettier --check .` reports all files formatted.
+- [PASS] No risky `!` non-null assertions on nullable DB columns in production
+  paths **after this pass**. Found four such assertions in
+  `app/seasons/[year]/page.tsx` (`season.worldChampionDriver!.slug` and the parallel
+  `constructorsChampionTeam!.…`), each guarded by a `Boolean(...)` ternary that
+  TypeScript cannot narrow through. Replaced the `Boolean(x)` narrowing pattern with
+  local `const`s (`const worldChampion = season.worldChampionDriver;` plus a
+  `worldChampion &&` check inside the ternary) so TS narrows without the `!`.
+- [PASS] The remaining `!` non-null assertion in `lib/db/queries/comparison.ts:48`
+  (`link.driver!.id` after `.filter((link) => link.driver)`) is safe: the filter
+  callback is a plain predicate, not a typed guard, so TS keeps `driver` nullable;
+  the runtime behaviour is identical (the falsy entries have been removed). Left as-is
+  because `lib/` is outside the allowed scope.
+- [PASS] All DTOs returned by DAL functions declare nullable columns as
+  `T | null` (drivers.wins, teams.championships, circuits.lengthKm, etc.), and all
+  call sites either pass them through `orDash(...)` or guard with a `?:` ternary.
+- [PASS] Date columns from Postgres are typed `string | Date | null`; the one place
+  that prints them (`app/seasons/[year]/page.tsx: formatRaceDate`) defensively parses
+  the value rather than assuming the wire format.
+
+### Accessibility
+
+- [PASS] Skip-to-content link present in `app/layout.tsx:69-74`; targets `<main id="main">`.
+  Visible only on focus, exits the sticky header, lives at the top of the body.
+- [PASS] Every page has exactly one `<h1>`. Verified across `app/layout.tsx` (none),
+  the home `<Hero>` (one), `/about`, `/cars`, `/cars/[slug]`, `/compare` (one per
+  render branch, never both), `/circuits`, `/circuits/[slug]`, `/drivers`,
+  `/drivers/[slug]`, `/eras`, `/search`, `/seasons`, `/seasons/[year]`, `/teams`,
+  `/teams/[slug]`, every `error.tsx`, and `not-found.tsx`.
+- [PASS] Every form has associated labels. `FilterSelect` pairs an explicit
+  `<label htmlFor="filter-{name}">` with its `<select id="filter-{name}">`;
+  `FilterToggle` wraps the checkbox in an implicit `<label>`; the search input has
+  `<label htmlFor="archive-search" className="sr-only">`; the compare form uses
+  `FilterSelect` and so inherits the same pairing.
+- [PASS] Tables have proper `<thead>` with `<th scope="col">` in every standings
+  table (drivers, both seasons tables, both home standings tables).
+- [PASS] `<caption className="sr-only">` describes the standings tables on
+  `app/seasons/[year]/page.tsx` and `components/archive/home/now-season.tsx`.
+  Minor note (not a fail): `app/drivers/[slug]/page.tsx:207` (season-finishes table)
+  omits a `<caption>`. Acceptable because the surrounding `<Eyebrow>Season finishes</Eyebrow>`
+  already names the table; screen readers will announce the heading context.
+- [PASS] Lists are `<ul>` / `<ol>`, not styled `<div>`s. Search-results rows are
+  `<ul><li><Link>…</Link></li></ul>`; season/team race histories use `<ol>`; era
+  rows are `<article>`, which is appropriate for independent editorial entries.
+- [PASS] Interactive elements are `<button>` (filter apply, theme toggle, mobile
+  menu trigger/close, team-evolution tabs, search clear, retry buttons in error
+  boundaries) or `<Link>` (navigation, entity cards). No styled `<div>`s pretending
+  to be clickable.
+- [PASS] `<nav aria-label="Primary">` and `<nav aria-label="Footer">` distinguish
+  the two nav landmarks. `aria-current="page"` on the active nav link in
+  `components/layout/site-header.tsx:20`.
+- [PASS] `aria-label` set on icon-only buttons (Open menu, Close menu, Toggle theme,
+  Clear search).
+- [PASS] Team-evolution tabs expose `role="tablist"` + `role="tab"` +
+  `aria-selected` + `aria-label`. Search form uses `role="search"`. Decorative
+  separators carry `aria-hidden="true"`.
+- [PASS] Mobile menu is a Radix `Dialog` with `Dialog.Overlay` rendered (so the
+  built-in body-scroll lock actually fires) and `Dialog.Title` provided as an
+  `sr-only` element (Radix requires a Title for screen-reader announcement).
+
+### Secrets & env
+
+- [PASS] `.gitignore` line 34 (`/.env*` with `!.env.example` exception) covers all
+  env files; `.env.local` is ignored (verified via repo state — `.env.local` exists
+  on disk but is not tracked).
+- [PASS] `.env.example` contains only variable names + comments; no real values
+  are committed.
+- [PASS] All required server env reads go through `lib/env.ts → serverEnv()`:
+  `lib/db/index.ts:28` calls `serverEnv().DATABASE_URL` once and caches the
+  connection. `lib/env.ts` validates the URL prefix (`postgres://` or
+  `postgresql://`) at first access with a clear error message.
+- [PASS] The remaining direct `process.env` reads are intentional and benign:
+  `lib/seo.ts:13` reads `NEXT_PUBLIC_SITE_URL` with a localhost fallback (public
+  var, optional); `lib/db/index.ts:39` reads `NODE_ENV` (framework convention);
+  `drizzle.config.ts` and `lib/db/seed/{seed,verify}.ts` read `DIRECT_URL` or
+  `DATABASE_URL` for scripts outside the Next runtime (these run with `tsx`).
+- [PASS] No hardcoded URLs to internal services in `app/` or `components/`.
+  Only `lib/seo.ts` and `vercel.json` (deployment) mention non-localhost URLs, and
+  both pull from env or are config-only.
+
+### Validation
+
+- [PASS] Catalog pages parse `searchParams` through Zod and treat a malformed
+  query string as the unfiltered case (verified in `app/cars/page.tsx`,
+  `app/drivers/page.tsx`, `app/teams/page.tsx`, `app/circuits/page.tsx`,
+  `app/seasons/page.tsx`): `safeParse(withoutBlanks(...))` then fall back to
+  `parse({})` on failure. `withoutBlanks()` drops empty strings and `undefined`.
+- [PASS] `/search` reads `params.q` safely. The line `const rawQuery =
+  typeof params.q === "string" ? params.q : "";` covers `string | string[] |
+  undefined` from the URL — a duplicated key like `?q=a&q=b` collapses to the
+  first string, an array collapses to the empty default.
+- [PASS] `/compare` reads `params.a` / `params.b` via a `firstParam` helper that
+  returns `value[0]` for arrays and the bare string otherwise. Both `generateMetadata`
+  and the page handler call it.
+- [PASS] No Server Actions or Route Handlers exist yet (search, compare, all DAL
+  reads are direct page reads). The validation surface is therefore limited to
+  catalog `searchParams` + the two compare params, all of which are covered.
+- [PASS] Filter zod schemas clamp years to `[1950, 2100]`, decade to multiples of
+  ten, pagination to `1 ≤ limit ≤ 200` and `offset ≥ 0`. Strings require
+  `min(1)` so empty selections don't sneak into the WHERE clause.
+
+### Data integrity
+
+- [PASS] Nullable columns render through `orDash(...)`. Spot-checked across all
+  detail pages: cars spec rows (`chassisName`, `engineManufacturer`,
+  `engineConfig`, `capacityLiters`, `powerHp`, `weightKg`), drivers career stats
+  (`championships`, `wins`, `poles`, `podiums`, `raceStarts`, `careerPoints`),
+  teams career stats (`championships`, `wins`, `poles`), circuits spec
+  (`lengthKm`, `turns`, `lapsStandard`, `firstGpYear`). Where the rendering
+  shape differs (cars spec rows build the value inline), the `null`-branch
+  is an explicit `"—"`.
+- [PASS] No fabricated placeholder numbers in components. The legenday-drivers and
+  team-cards blocks are only fed by queries with `championsOnly: true`, so the
+  number rendered is always a verified count. Driver win counts of zero in the
+  2026 standings are facts, not silent fabrication — the seed file documents
+  the cross-check (12 winners = 12 rounds = Mercedes 8 + Ferrari 2 + McLaren 2).
+- [PASS] All sources are documented in `lib/db/seed/DATA_SOURCES.md` with URLs
+  and retrieval dates. Title counts are derived by counting year tables, not
+  copying the Wikipedia summary (see "Failed approaches" #8).
+- [PASS] Empty/non-applicable values use the editorial phrase "not recorded" /
+  "No X yet" / "Title seasons in this archive" rather than numeric zeros.
+
+### Responsive
+
+- [PASS] Major pages use responsive grid utilities. Catalogue pages switch
+  card columns at `sm:` and `lg:` breakpoints (drivers uses `sm:grid-cols-2
+  lg:grid-cols-4`, cars/circuits `sm:grid-cols-2 lg:grid-cols-3`, teams
+  `lg:grid-cols-2`). Tables collapse via horizontal scroll if their container
+  shrinks; `now-season` rearranges the two standings side-by-side at `lg:grid-cols-2`.
+- [PASS] No fixed-width tables wider than their container. Standings tables use
+  `w-full`; column widths are flex/percent inside the table; the per-row `Link`
+  components and `<th>` cells size by content.
+- [PASS] Mobile menu functional. Trigger is `md:hidden` (so only shows on small
+  viewports), opens a fullscreen Radix Dialog, focus trap + scroll lock + close
+  on link click all in place.
+- [PASS] Sticky header shrinks the desktop nav to `hidden … md:flex` so it
+  disappears at small widths; theme toggle and mobile-menu trigger remain visible.
+- [PASS] `lib/constants/eras.ts` defines eras with fluid `clamp()`-based display
+  sizes in `app/globals.css` (`--text-display-{sm,md,lg}`, `--text-hero`), so the
+  hero never overflows a 320 px viewport.
+
+### Performance
+
+- [PASS] Large lists paginated through DAL functions: every `list*` accepts a
+  `{ limit, offset }` and forwards it to Drizzle (`listCars`, `listDrivers`,
+  `listTeams`, `listCircuits`, `listSeasons`, `listSeasonsForCatalog`). The
+  detail home sections cap to 6 rows; archive stats returns single counts.
+- [PASS] Parallel queries where independent: `app/(marketing)/page.tsx:31`
+  issues 6 reads via `Promise.all`; detail pages split into `Promise.all([a, b])`
+  pairs (e.g. season detail: `[season, standings]`); all `get*FilterOptions`
+  helpers do the same. The session-pooler + `max: 1` choice in `lib/db/index.ts`
+  makes this concurrency safe (see "Failed approaches" #9 for the full history).
+- [PASS] No obvious O(n²) per request. The heaviest in-page operation is the
+  team-evolution dedup in `app/teams/[slug]/page.tsx`, which is `O(seasons ×
+  cars + seasons × driverTeamSeasons)` — bounded by the seasons the archive
+  holds for that team. Acceptable.
+- [PASS] No `loading.tsx` boundary (deliberate — see "Failed approaches" #12),
+  no `setTimeout`/`setInterval` in render paths, search uses `useTransition` +
+  a 250 ms debounce for typing.
+
+### Visual consistency
+
+- [PASS] All Eyebrows are styled with `font-mono text-[0.7rem] tracking-[0.14em]
+  uppercase` (or the `spec-label` utility which composes the same). Variants
+  seen in the wild (`text-[0.65rem]` for table headers / image-frame captions,
+  `text-[0.6rem]` for fine-print captions, `tracking-[0.16em]` for nav, and
+  `tracking-[0.12em]` for form-control labels) are intentional size adjustments
+  for context, not a missing base style.
+- [PASS] All Display components use the `Display` primitive
+  (`components/ui/typography.tsx`). Confirmed across all detail and catalogue
+  pages and every home section.
+- [PASS] Container / Section wrappers from `components/ui/container.tsx` used
+  consistently. Detail and catalogue pages render inside `<Container><Section>`;
+  the home sections each wrap in `<Section><Container>` and the editorial
+  statement inverts the order (`<Container><Display>` inside `<Section>`) only
+  for the prose block, which is intentional.
+- [PASS] Buttons used only through the `<Button>` primitive (`components/ui/button.tsx`).
+- [PASS] Section headings on home go through `SectionHeader` so each block has
+  a consistent eyebrow + title + view-all link.
+
+### Project rules
+
+- [PASS] No `loading.tsx` files anywhere in the project. `find … -name loading.tsx`
+  returns no results.
+- [PASS] No leftover TODO / FIXME / HACK comments in production paths. The only
+  `TODO` matches in the repo are inside `package-lock.json` (a hash coincidence
+  inside an unrelated integrity string) and a single mention in `MASTERPROMPT.md`
+  ("don't leave obvious TODOs without fixing").
+- [PASS] No unrequested new dependencies. `package.json` `dependencies` and
+  `devDependencies` are unchanged this pass.
+- [PASS] No `console.log` in production paths. The only `console.*` calls are in
+  `lib/db/seed/seed.ts` and `lib/db/seed/verify.ts` — both are CLI scripts invoked
+  via `npm run db:*`, never imported by app routes or components.
+- [PASS] `placeholder-page.tsx` is now unused (no remaining imports in `app/` or
+  `components/`). It is left in place for now; the "Important notes" section
+  already flags it for removal once the next commit touches it.
+- [PASS] No modifications to schema, layouts, navigation, routes, or package.json.
+
+### Notes & known gaps (informational, not blocking)
+
+- `npm run build` was attempted locally as part of the QA pass and fails at the
+  static-params stage (every detail page issues `list*Slugs()` during build).
+  In this sandboxed environment `.env.local` is a placeholder; with the real
+  Supabase session-pooler URL that `PROJECT_STATE.md` records, build completes.
+  This is environmental, not a regression introduced by this pass.
+- The README mentions `framer-motion` / `gsap` as future deps; none are
+  installed and none are required for the MVP milestone set. Not a fail.
+- `app/(marketing)/page.tsx` and the other pages still work after the
+  `season.worldChampionDriver` refactor — verified with a clean `tsc --noEmit`,
+  `eslint`, and `prettier --check`.
