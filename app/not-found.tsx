@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Container, Section } from "@/components/ui/container";
 import { Display, Eyebrow, Lede } from "@/components/ui/typography";
+
+export const metadata: Metadata = {
+  title: "Not found",
+  robots: { index: false, follow: false },
+};
 
 export default function NotFound() {
   return (

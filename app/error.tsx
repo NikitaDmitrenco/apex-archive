@@ -8,10 +8,10 @@ import { Display, Eyebrow, Lede } from "@/components/ui/typography";
 
 export default function ErrorBoundary({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   return (
     <Container>
@@ -30,7 +30,7 @@ export default function ErrorBoundary({
           </p>
         ) : null}
         <div className="mt-10 flex gap-3">
-          <Button size="lg" onClick={reset}>
+          <Button size="lg" onClick={retry}>
             Try again
           </Button>
           <Button size="lg" variant="outline" asChild>
