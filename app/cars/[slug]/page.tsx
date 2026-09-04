@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { FavoriteButton } from "@/components/archive/favorite-button";
 import { Container, Section } from "@/components/ui/container";
 import { Display, Eyebrow } from "@/components/ui/typography";
+import { getCurrentUser } from "@/lib/auth/queries";
 import { getCarBySlug, listCarSlugs, listCars } from "@/lib/db/queries/cars";
+import { isFavorited } from "@/lib/db/queries/favorites";
 import { orDash } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 
@@ -66,7 +69,12 @@ export default async function CarDetailPage({
     (driver) => driver.id === car.season.worldChampionDriverId,
   );
 
-  const teamCars = await listCars({ teamSlug: car.team.slug, limit: 12 });
+  const [teamCars, user, saved] = await Promise.all([
+    listCars({ teamSlug: car.team.slug, limit: 12 }),
+    getCurrentUser(),
+    isFavorited("car", car.id),
+  ]);
+
   const related = teamCars
     .filter((entry) => entry.slug !== car.slug)
     .slice(0, 3);
@@ -104,9 +112,17 @@ export default async function CarDetailPage({
           </Link>
         </Eyebrow>
 
-        <Display as="h1" size="lg" className="mt-6">
-          {car.name}
-        </Display>
+        <div className="mt-6 flex flex-wrap items-start justify-between gap-6">
+          <Display as="h1" size="lg">
+            {car.name}
+          </Display>
+          <FavoriteButton
+            entityType="car"
+            entityId={car.id}
+            initialFavorited={saved}
+            signedIn={Boolean(user)}
+          />
+        </div>
 
         <div className="border-border bg-card relative mt-12 aspect-21/9 border">
           {car.imageUrl ? (

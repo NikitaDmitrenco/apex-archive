@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { FavoriteButton } from "@/components/archive/favorite-button";
 import { Container, Section } from "@/components/ui/container";
 import { Display, Eyebrow } from "@/components/ui/typography";
+import { getCurrentUser } from "@/lib/auth/queries";
 import { getCircuitBySlug, listCircuitSlugs } from "@/lib/db/queries/circuits";
+import { isFavorited } from "@/lib/db/queries/favorites";
 import { orDash } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 
@@ -67,6 +70,11 @@ export default async function CircuitDetailPage({
     new Set(races.map((race) => race.season.year)),
   ).sort((a, b) => b - a);
 
+  const [user, saved] = await Promise.all([
+    getCurrentUser(),
+    isFavorited("circuit", circuit.id),
+  ]);
+
   return (
     <Container>
       <Section>
@@ -75,9 +83,17 @@ export default async function CircuitDetailPage({
           {circuit.location ? ` · ${circuit.location}` : ""}
         </Eyebrow>
 
-        <Display as="h1" size="lg" className="mt-6">
-          {circuit.name}
-        </Display>
+        <div className="mt-6 flex flex-wrap items-start justify-between gap-6">
+          <Display as="h1" size="lg">
+            {circuit.name}
+          </Display>
+          <FavoriteButton
+            entityType="circuit"
+            entityId={circuit.id}
+            initialFavorited={saved}
+            signedIn={Boolean(user)}
+          />
+        </div>
 
         <div className="border-border bg-card relative mt-12 aspect-16/9 border">
           {circuit.layoutImageUrl ? (

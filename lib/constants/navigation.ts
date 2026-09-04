@@ -23,8 +23,11 @@ export const archiveNav: NavItem[] = [
 export const utilityNav: NavItem[] = [
   { label: "Search", href: "/search" },
   { label: "About", href: "/about" },
+  { label: "Account", href: "/account" },
   { label: "Compare", href: "/compare", mobileOnly: true },
   { label: "Eras", href: "/eras", mobileOnly: true },
+  { label: "Stories", href: "/stories", mobileOnly: true },
+  { label: "Assistant", href: "/assistant", mobileOnly: true },
 ];
 
 export const allNavItems: NavItem[] = [...archiveNav, ...utilityNav];

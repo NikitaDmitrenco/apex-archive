@@ -41,6 +41,19 @@ export const resultStatus = pgEnum("result_status", [
   "dns",
 ]);
 
+/**
+ * Which entity kind a favorite row points at. Stored as a string enum so the row can carry
+ * any of the five archive entity types without a polymorphic foreign key. The matching UUID
+ * lives in `entityId`; joins back to the entity tables are keyed on `entityType` at read time.
+ */
+export const favoriteEntityType = pgEnum("favorite_entity_type", [
+  "car",
+  "driver",
+  "team",
+  "circuit",
+  "season",
+]);
+
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
@@ -402,6 +415,34 @@ export const articles = pgTable("articles", {
   ...timestamps,
 });
 
+/**
+ * Per-user saved entities. `userId` is managed by Supabase Auth (auth.users.id) and is
+ * intentionally not a foreign key here — the schema lives in a different Supabase-managed
+ * table that Drizzle does not own. The unique constraint on (user, entityType, entityId)
+ * keeps a single user from saving the same row twice.
+ */
+export const favorites = pgTable(
+  "favorites",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull(),
+    entityType: favoriteEntityType("entity_type").notNull(),
+    entityId: uuid("entity_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    unique("favorites_user_entity_unique").on(
+      table.userId,
+      table.entityType,
+      table.entityId,
+    ),
+    index("favorites_user_idx").on(table.userId),
+    index("favorites_entity_idx").on(table.entityType, table.entityId),
+  ],
+);
+
 export const driversRelations = relations(drivers, ({ many }) => ({
   results: many(results),
   driverStandings: many(driverStandings),
@@ -536,4 +577,6 @@ export type Result = typeof results.$inferSelect;
 export type DriverStanding = typeof driverStandings.$inferSelect;
 export type ConstructorStanding = typeof constructorStandings.$inferSelect;
 export type Article = typeof articles.$inferSelect;
+export type Favorite = typeof favorites.$inferSelect;
 export type DataConfidence = (typeof dataConfidence.enumValues)[number];
+export type FavoriteEntityType = (typeof favoriteEntityType.enumValues)[number];

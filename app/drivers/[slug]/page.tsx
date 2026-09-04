@@ -2,13 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { FavoriteButton } from "@/components/archive/favorite-button";
 import { Container, Section } from "@/components/ui/container";
 import { Display, Eyebrow } from "@/components/ui/typography";
+import { getCurrentUser } from "@/lib/auth/queries";
 import {
   getDriverBySlug,
   getDriverChampionshipSeasons,
   listDriverSlugs,
 } from "@/lib/db/queries/drivers";
+import { isFavorited } from "@/lib/db/queries/favorites";
 import { formatPoints, orDash } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 
@@ -60,7 +63,11 @@ export default async function DriverDetailPage({
 
   if (!driver) notFound();
 
-  const titleYears = await getDriverChampionshipSeasons(driver.id);
+  const [titleYears, user, saved] = await Promise.all([
+    getDriverChampionshipSeasons(driver.id),
+    getCurrentUser(),
+    isFavorited("driver", driver.id),
+  ]);
 
   // Newest first: a career reads better backwards from where the driver ended up.
   const timeline = [...driver.driverTeamSeasons].sort(
@@ -87,9 +94,17 @@ export default async function DriverDetailPage({
           {driver.nationality} · {careerSpan}
         </Eyebrow>
 
-        <Display as="h1" size="lg" className="mt-6">
-          {driver.fullName}
-        </Display>
+        <div className="mt-6 flex flex-wrap items-start justify-between gap-6">
+          <Display as="h1" size="lg">
+            {driver.fullName}
+          </Display>
+          <FavoriteButton
+            entityType="driver"
+            entityId={driver.id}
+            initialFavorited={saved}
+            signedIn={Boolean(user)}
+          />
+        </div>
 
         {driver.championships ? (
           <p className="text-primary mt-6 font-mono text-sm tracking-[0.16em] uppercase">

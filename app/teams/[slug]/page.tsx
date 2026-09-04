@@ -2,17 +2,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { FavoriteButton } from "@/components/archive/favorite-button";
 import {
   TeamEvolution,
   type TeamSeasonEntry,
 } from "@/components/archive/team-evolution";
 import { Container, Section } from "@/components/ui/container";
 import { Display, Eyebrow } from "@/components/ui/typography";
+import { getCurrentUser } from "@/lib/auth/queries";
 import {
   getTeamBySlug,
   getTeamChampionshipSeasons,
   listTeamSlugs,
 } from "@/lib/db/queries/teams";
+import { isFavorited } from "@/lib/db/queries/favorites";
 import { orDash } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 
@@ -60,7 +63,11 @@ export default async function TeamDetailPage({
 
   if (!team) notFound();
 
-  const titleYears = await getTeamChampionshipSeasons(team.id);
+  const [titleYears, user, saved] = await Promise.all([
+    getTeamChampionshipSeasons(team.id),
+    getCurrentUser(),
+    isFavorited("team", team.id),
+  ]);
   const championYears = new Set(titleYears.map((row) => row.year));
 
   // One entry per season the archive holds for this team, newest first.
@@ -124,9 +131,17 @@ export default async function TeamDetailPage({
           {activeSpan ? ` · ${activeSpan}` : ""}
         </Eyebrow>
 
-        <Display as="h1" size="lg" className="mt-6">
-          {team.name}
-        </Display>
+        <div className="mt-6 flex flex-wrap items-start justify-between gap-6">
+          <Display as="h1" size="lg">
+            {team.name}
+          </Display>
+          <FavoriteButton
+            entityType="team"
+            entityId={team.id}
+            initialFavorited={saved}
+            signedIn={Boolean(user)}
+          />
+        </div>
 
         {team.baseLocation ? (
           <p className="text-muted-foreground mt-6 font-mono text-[0.7rem] tracking-[0.14em] uppercase">

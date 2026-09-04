@@ -10,6 +10,23 @@ const serverEnvSchema = z.object({
       "DATABASE_URL must be a postgres:// connection string",
     ),
   NEXT_PUBLIC_SITE_URL: z.string().optional(),
+  /**
+   * Supabase project URL and public anon key — both optional so the build does not crash
+   * when the project has not been provisioned for Auth yet. The auth-related code paths
+   * check for their presence at use time and degrade gracefully when missing.
+   */
+  NEXT_PUBLIC_SUPABASE_URL: z.string().optional(),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
+  /**
+   * Server-only service-role key, never exposed to the browser. Unused for now; declared
+   * so .env.example documents the variable without a separate code path.
+   */
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+  /**
+   * Optional. Required only by the AI Archive Assistant route at request time; without it
+   * the route responds 503 and the rest of the app is unaffected.
+   */
+  OPENAI_API_KEY: z.string().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

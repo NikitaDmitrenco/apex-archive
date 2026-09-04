@@ -2,13 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { FavoriteButton } from "@/components/archive/favorite-button";
 import { Container, Section } from "@/components/ui/container";
 import { Display, Eyebrow } from "@/components/ui/typography";
+import { getCurrentUser } from "@/lib/auth/queries";
 import {
   getSeasonByYear,
   getSeasonStandings,
   listSeasonYears,
 } from "@/lib/db/queries/seasons";
+import { isFavorited } from "@/lib/db/queries/favorites";
 import { formatPoints, orDash } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 
@@ -81,6 +84,11 @@ export default async function SeasonDetailPage({
 
   if (!season) notFound();
 
+  const [user, saved] = await Promise.all([
+    getCurrentUser(),
+    isFavorited("season", season.id),
+  ]);
+
   const orderedRaces = [...season.races].sort(
     (a, b) => a.roundNumber - b.roundNumber,
   );
@@ -100,9 +108,17 @@ export default async function SeasonDetailPage({
       <Section>
         <Eyebrow>Formula 1 · World Championship</Eyebrow>
 
-        <Display as="h1" size="lg" className="mt-6">
-          {season.year}
-        </Display>
+        <div className="mt-6 flex flex-wrap items-start justify-between gap-6">
+          <Display as="h1" size="lg">
+            {season.year}
+          </Display>
+          <FavoriteButton
+            entityType="season"
+            entityId={season.id}
+            initialFavorited={saved}
+            signedIn={Boolean(user)}
+          />
+        </div>
 
         {season.summary ? (
           <p className="text-muted-foreground mt-8 max-w-2xl leading-relaxed">

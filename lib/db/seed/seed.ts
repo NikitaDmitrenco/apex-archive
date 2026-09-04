@@ -1,3 +1,13 @@
+/**
+ * Seeds the archive with curated F1 data (teams, drivers, seasons, circuits, cars, races,
+ * standings and driver/team/season links). User-generated data — favourites, accounts — is
+ * NOT seeded here; the `favorites` table created alongside Milestone 14's auth work is
+ * populated by visitors, not by this script. After pulling schema changes run:
+ *
+ *   npm run db:generate   # only if schema.ts was edited
+ *   npm run db:migrate    # applies the new migration to Supabase
+ */
+
 import { config } from "dotenv";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
