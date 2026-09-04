@@ -1,0 +1,7 @@
+.next
+node_modules
+package-lock.json
+public
+
+# Project documents are hand-formatted; Prettier reflows their tables and lists.
+*.md
