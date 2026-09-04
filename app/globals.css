@@ -1,26 +1,134 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-plex-mono);
+  --font-display: var(--font-fraunces);
+
+  /* Editorial display sizes. Fluid so hero type never overflows narrow screens. */
+  --text-display-sm: clamp(1.75rem, 1.2rem + 2.4vw, 2.5rem);
+  --text-display-md: clamp(2.25rem, 1.2rem + 4.6vw, 3.5rem);
+  --text-display-lg: clamp(2.75rem, 0.9rem + 8vw, 5rem);
+  --text-hero: clamp(3.25rem, 0.5rem + 12vw, 7rem);
+
+  /* Vertical rhythm for editorial sections. */
+  --spacing-section-sm: 4rem;
+  --spacing-section-md: 6rem;
+  --spacing-section-lg: 10rem;
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/*
+ * Token naming note: `--primary` carries the Apex Archive brand accent (muted brass),
+ * while `--accent` is shadcn's subtle hover surface. They are deliberately different
+ * things despite the brief calling brass "the accent colour".
+ */
+:root {
+  --background: #fafaf8;
+  --foreground: #111113;
+  --card: #ffffff;
+  --card-foreground: #111113;
+  --popover: #ffffff;
+  --popover-foreground: #111113;
+  --primary: #9c7a1c;
+  --primary-foreground: #fafaf8;
+  --secondary: #f0efeb;
+  --secondary-foreground: #111113;
+  --muted: #f0efeb;
+  --muted-foreground: #6b6b70;
+  --accent: #f0efeb;
+  --accent-foreground: #111113;
+  --destructive: #a33822;
+  --border: #e4e3de;
+  --input: #e4e3de;
+  --ring: #9c7a1c;
+  --chart-1: #9c7a1c;
+  --chart-2: #5b6b7c;
+  --chart-3: #8a857c;
+  --chart-4: #454b54;
+  --chart-5: #23262b;
+  /* Minimal rounding — the brief rules out heavily rounded corners. */
+  --radius: 0.125rem;
+}
+
+.dark {
+  --background: #0a0a0c;
+  --foreground: #f4f3ef;
+  --card: #131316;
+  --card-foreground: #f4f3ef;
+  --popover: #131316;
+  --popover-foreground: #f4f3ef;
+  --primary: #c9a227;
+  --primary-foreground: #0a0a0c;
+  --secondary: #1c1c20;
+  --secondary-foreground: #f4f3ef;
+  --muted: #1c1c20;
+  --muted-foreground: #8a8a90;
+  --accent: #1c1c20;
+  --accent-foreground: #f4f3ef;
+  --destructive: #b3402a;
+  --border: #232327;
+  --input: #232327;
+  --ring: #c9a227;
+  --chart-1: #c9a227;
+  --chart-2: #7c8a9a;
+  --chart-3: #a8a29a;
+  --chart-4: #5e6570;
+  --chart-5: #3a3f47;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/*
+ * Named `spec-label` rather than `text-spec`: tailwind-merge reads a `text-*` custom
+ * utility as a text-colour class and drops it when merged with one.
+ */
+@utility spec-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
