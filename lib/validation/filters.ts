@@ -23,11 +23,9 @@ const pagination = {
   offset: z.coerce.number().int().min(0).default(0),
 };
 
-/**
- * Era is intentionally absent: naming and dating F1 eras is an editorial decision that is
- * not settled yet. Catalogue UI maps a named era onto yearFrom/yearTo (Milestone 4).
- */
+/** Era is a named year range from lib/constants/eras.ts; listCars resolves it to bounds. */
 export const carFiltersSchema = z.object({
+  era: z.string().min(1).optional(),
   teamSlug: z.string().min(1).optional(),
   driverSlug: z.string().min(1).optional(),
   engineManufacturer: z.string().min(1).optional(),

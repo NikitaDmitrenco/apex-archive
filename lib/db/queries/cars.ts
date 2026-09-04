@@ -1,5 +1,16 @@
-import { and, asc, desc, eq, exists, gte, lte, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  exists,
+  gte,
+  isNotNull,
+  lte,
+  sql,
+} from "drizzle-orm";
 
+import { findEra } from "@/lib/constants/eras";
 import { db } from "@/lib/db";
 import {
   cars,
@@ -29,6 +40,13 @@ export async function listCars(input: unknown = {}): Promise<CarListItem[]> {
 
   const conditions = [];
 
+  if (filters.era) {
+    const era = findEra(filters.era);
+    // An unrecognised era slug narrows nothing rather than silently matching everything.
+    if (!era) return [];
+    conditions.push(gte(seasons.year, era.from));
+    if (era.to) conditions.push(lte(seasons.year, era.to));
+  }
   if (filters.teamSlug) conditions.push(eq(teams.slug, filters.teamSlug));
   if (filters.year) conditions.push(eq(seasons.year, filters.year));
   if (filters.yearFrom) conditions.push(gte(seasons.year, filters.yearFrom));
@@ -83,6 +101,11 @@ export async function listCars(input: unknown = {}): Promise<CarListItem[]> {
     .offset(filters.offset);
 }
 
+export async function listCarSlugs(): Promise<string[]> {
+  const rows = await db.select({ slug: cars.slug }).from(cars);
+  return rows.map((row) => row.slug);
+}
+
 export async function getCarBySlug(slug: string) {
   return db.query.cars.findFirst({
     where: eq(cars.slug, slug),
@@ -94,12 +117,48 @@ export async function getCarBySlug(slug: string) {
   });
 }
 
-export async function listEngineManufacturers(): Promise<string[]> {
-  const rows = await db
-    .selectDistinct({ value: cars.engineManufacturer })
-    .from(cars)
-    .where(sql`${cars.engineManufacturer} is not null`)
-    .orderBy(asc(cars.engineManufacturer));
+export type CarFilterOptions = {
+  teams: { slug: string; name: string }[];
+  engineManufacturers: string[];
+  drivers: { slug: string; fullName: string }[];
+  years: number[];
+};
 
-  return rows.map((row) => row.value).filter((value) => value !== null);
+/**
+ * Only values that actually match something are offered, so no choice in the filter bar can
+ * lead to an empty catalogue on its own.
+ */
+export async function getCarFilterOptions(): Promise<CarFilterOptions> {
+  const [teamRows, engineRows, driverRows, yearRows] = await Promise.all([
+    db
+      .selectDistinct({ slug: teams.slug, name: teams.name })
+      .from(cars)
+      .innerJoin(teams, eq(cars.teamId, teams.id))
+      .orderBy(asc(teams.name)),
+    db
+      .selectDistinct({ value: cars.engineManufacturer })
+      .from(cars)
+      .where(isNotNull(cars.engineManufacturer))
+      .orderBy(asc(cars.engineManufacturer)),
+    db
+      .selectDistinct({ slug: drivers.slug, fullName: drivers.fullName })
+      .from(driverTeamSeasons)
+      .innerJoin(drivers, eq(driverTeamSeasons.driverId, drivers.id))
+      .where(isNotNull(driverTeamSeasons.carId))
+      .orderBy(asc(drivers.fullName)),
+    db
+      .selectDistinct({ year: seasons.year })
+      .from(cars)
+      .innerJoin(seasons, eq(cars.seasonId, seasons.id))
+      .orderBy(desc(seasons.year)),
+  ]);
+
+  return {
+    teams: teamRows,
+    engineManufacturers: engineRows
+      .map((row) => row.value)
+      .filter((value): value is string => value !== null),
+    drivers: driverRows,
+    years: yearRows.map((row) => row.year),
+  };
 }
