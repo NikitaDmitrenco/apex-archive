@@ -88,11 +88,38 @@ export async function getDriverChampionshipSeasons(driverId: string) {
     .orderBy(asc(seasons.year));
 }
 
-export async function listDriverNationalities(): Promise<string[]> {
-  const rows = await db
-    .selectDistinct({ value: drivers.nationality })
-    .from(drivers)
-    .orderBy(asc(drivers.nationality));
+export async function listDriverSlugs(): Promise<string[]> {
+  const rows = await db.select({ slug: drivers.slug }).from(drivers);
+  return rows.map((row) => row.slug);
+}
 
-  return rows.map((row) => row.value);
+export type DriverFilterOptions = {
+  nationalities: string[];
+  teams: { slug: string; name: string }[];
+  years: number[];
+};
+
+export async function getDriverFilterOptions(): Promise<DriverFilterOptions> {
+  const [nationalityRows, teamRows, yearRows] = await Promise.all([
+    db
+      .selectDistinct({ value: drivers.nationality })
+      .from(drivers)
+      .orderBy(asc(drivers.nationality)),
+    db
+      .selectDistinct({ slug: teams.slug, name: teams.name })
+      .from(driverTeamSeasons)
+      .innerJoin(teams, eq(driverTeamSeasons.teamId, teams.id))
+      .orderBy(asc(teams.name)),
+    db
+      .selectDistinct({ year: seasons.year })
+      .from(driverTeamSeasons)
+      .innerJoin(seasons, eq(driverTeamSeasons.seasonId, seasons.id))
+      .orderBy(desc(seasons.year)),
+  ]);
+
+  return {
+    nationalities: nationalityRows.map((row) => row.value),
+    teams: teamRows,
+    years: yearRows.map((row) => row.year),
+  };
 }
