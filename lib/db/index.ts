@@ -27,7 +27,10 @@ const client =
   globalForDb.apexArchiveClient ??
   postgres(serverEnv().DATABASE_URL, {
     prepare: false,
-    max: 5,
+    // One connection per process. `next build` prerenders with eleven parallel workers,
+    // each holding its own pool, and Supabase's session pooler caps the project at fifteen
+    // clients — anything larger fails the build with EMAXCONNSESSION.
+    max: 1,
     idle_timeout: 20,
     connect_timeout: 10,
   });
