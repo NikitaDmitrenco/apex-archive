@@ -55,11 +55,13 @@ export function SiteHeader() {
             </ul>
             <span className="bg-border mx-6 h-3 w-px" aria-hidden="true" />
             <ul className="flex items-center gap-7">
-              {utilityNav.map((item) => (
-                <li key={item.href}>
-                  <NavLink item={item} active={isActive(item.href)} />
-                </li>
-              ))}
+              {utilityNav
+                .filter((item) => !item.mobileOnly)
+                .map((item) => (
+                  <li key={item.href}>
+                    <NavLink item={item} active={isActive(item.href)} />
+                  </li>
+                ))}
             </ul>
           </nav>
 

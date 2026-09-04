@@ -1,6 +1,8 @@
 export type NavItem = {
   label: string;
   href: string;
+  /** Items only appear in the mobile menu; the desktop top nav stays fixed per the brief. */
+  mobileOnly?: boolean;
 };
 
 /**
@@ -21,6 +23,8 @@ export const archiveNav: NavItem[] = [
 export const utilityNav: NavItem[] = [
   { label: "Search", href: "/search" },
   { label: "About", href: "/about" },
+  { label: "Compare", href: "/compare", mobileOnly: true },
+  { label: "Eras", href: "/eras", mobileOnly: true },
 ];
 
 export const allNavItems: NavItem[] = [...archiveNav, ...utilityNav];
