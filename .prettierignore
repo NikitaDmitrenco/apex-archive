@@ -3,5 +3,8 @@ node_modules
 package-lock.json
 public
 
+# Generated and owned by drizzle-kit.
+lib/db/migrations
+
 # Project documents are hand-formatted; Prettier reflows their tables and lists.
 *.md
