@@ -5,24 +5,15 @@ import { CarFilters } from "@/components/archive/car-filters";
 import { Container, Section } from "@/components/ui/container";
 import { Display, Eyebrow, Lede } from "@/components/ui/typography";
 import { getCarFilterOptions, listCars } from "@/lib/db/queries/cars";
+import { withoutBlanks } from "@/lib/search-params";
 import { carFiltersSchema } from "@/lib/validation/filters";
 
 export const metadata: Metadata = {
   title: "Cars",
 };
 
-/** Empty selects submit as "", which is absence rather than a value to filter on. */
-function withoutBlanks(params: Record<string, string | string[] | undefined>) {
-  return Object.fromEntries(
-    Object.entries(params).filter(
-      ([, value]) => value !== undefined && value !== "",
-    ),
-  );
-}
-
 export default async function CarsPage({ searchParams }: PageProps<"/cars">) {
-  const params = withoutBlanks(await searchParams);
-  const parsed = carFiltersSchema.safeParse(params);
+  const parsed = carFiltersSchema.safeParse(withoutBlanks(await searchParams));
 
   // A malformed query string falls back to the unfiltered catalogue instead of erroring.
   const filters = parsed.success ? parsed.data : carFiltersSchema.parse({});
