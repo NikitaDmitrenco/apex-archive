@@ -5,17 +5,17 @@
 > Не доверять этому файлу слепо — при расхождении с фактическим кодом доверять коду и
 > исправлять этот файл.
 
-Last updated: 2026-09-04 (Milestone 5 completed)
+Last updated: 2026-09-04 (Milestone 6 completed)
 
 ---
 
 ## Current milestone
 
-Milestone 5 — Drivers (завершён, ожидает подтверждения пользователя)
+Milestone 6 — Teams (завершён, ожидает подтверждения пользователя)
 
 ## Overall progress
 
-~44% (архитектура, скелет, БД, слой доступа, главная страница, разделы Cars и Drivers)
+~52% (архитектура, скелет, БД, слой доступа, главная страница, разделы Cars, Drivers, Teams)
 
 ## Completed
 
@@ -33,6 +33,9 @@ Milestone 5 — Drivers (завершён, ожидает подтвержден
   "Failed approaches" п.12.
 - **Milestone 5 — Drivers:** каталог с фильтрами + detail-страницы с карьерным таймлайном,
   таблицей финишей по сезонам и связями к cars / teams / seasons.
+- **Milestone 6 — Teams:** каталог с фильтрами + detail-страницы. **Team evolution timeline
+  реализован** (не перенесён в Milestone 14): выбор года меняет показанные машины, пилотов
+  и итог сезона, всё на клиенте без дополнительных запросов.
 
 ## In progress
 
@@ -40,7 +43,7 @@ Milestone 5 — Drivers (завершён, ожидает подтвержден
 
 ## Not completed
 
-- Milestones 6–14
+- Milestones 7–14
 
 ## Technical decisions
 
@@ -256,11 +259,12 @@ standings, а не только чемпион.
 ## Routes implemented
 
 - **`/` — готова полностью** (Milestone 3), на реальных данных, ISR `revalidate = 3600`.
-- **`/cars` и `/drivers` — готовы.** Динамические (`ƒ`), потому что читают `searchParams`.
-- **`/cars/[slug]` и `/drivers/[slug]` — готовы.** 18 машин и 40 пилотов предгенерированы,
-  `dynamicParams = false` → неизвестный slug даёт настоящий 404 (проверено).
-- Остальные 8 MVP-роутов рендерятся заглушками: `/about`, `/teams`, `/teams/[slug]`,
-  `/circuits`, `/circuits/[slug]`, `/seasons`, `/seasons/[year]`, `/search`.
+- **`/cars`, `/drivers`, `/teams` — готовы.** Динамические (`ƒ`), читают `searchParams`.
+- **`/cars/[slug]`, `/drivers/[slug]`, `/teams/[slug]` — готовы.** 18 машин, 40 пилотов и
+  16 команд предгенерированы, `dynamicParams = false` → неизвестный slug даёт настоящий
+  404 (проверено на каждом разделе).
+- Остальные 6 MVP-роутов рендерятся заглушками: `/about`, `/circuits`, `/circuits/[slug]`,
+  `/seasons`, `/seasons/[year]`, `/search`.
 - `app/error.tsx` и `app/not-found.tsx` есть. **`loading.tsx` намеренно отсутствует** —
   см. "Failed approaches" п.12.
 
@@ -296,6 +300,19 @@ standings, а не только чемпион.
 - `archive/car-filters.tsx`, `archive/driver-filters.tsx` — тонкие обёртки над `FilterBar`,
   задают только набор полей.
 - `lib/search-params.ts` — `withoutBlanks()`, общий для всех каталогов.
+- `archive/team-evolution.tsx` (Milestone 6) — интерактивный timeline команды. Все сезоны
+  приходят пропсом, переключение года не делает запросов. Вкладки с `role="tab"` и
+  `aria-selected`.
+- `archive/team-card.tsx`, `archive/team-filters.tsx` (Milestone 6).
+
+### Формулировка «в этом архиве» — важно для честности
+
+У сущностей рядом стоят два разных числа: реальный карьерный тотал (например, у Ferrari
+16 титулов) и то, что покрыто засеянными сезонами (у Ferrari это 2000 и 2004). Без
+оговорки это читается как противоречие. Поэтому все списки, ограниченные содержимым
+архива, подписаны явно: «Title seasons in this archive», «Career in this archive»,
+«Seasons held in this archive, not the driver's full career». **Сохранять эту оговорку
+на новых страницах.**
 - `archive/car-card.tsx` (Milestone 4) — рамка изображения рендерится всегда, с надписью
   «No image yet», когда `image_url` пуст.
 - `lib/constants/eras.ts` (Milestone 4) — восемь эпох по формуле двигателя,
@@ -504,21 +521,27 @@ driver↔team↔season, 23 строки личного зачёта и 11 — к
 
 ## Next milestone
 
-**Milestone 6 — Teams.** Начинать только по команде пользователя.
+**Milestone 7 — Circuits.** Начинать только по команде пользователя.
 
-Каталог + detail-страницы по разделу 4.4 MASTERPROMPT: championships, wins, poles, drivers,
-cars, seasons, timeline.
+Каталог + detail-страницы по разделу 4.5 MASTERPROMPT: layout, location, length, turns,
+laps, race history, lap records, notable races, related seasons.
 
 Что учесть:
 
-- **Разделы Cars и Drivers — рабочий образец.** Строить на `FilterBar`, detail-страницу
-  через `generateStaticParams` + `dynamicParams = false`, никаких `loading.tsx`.
-- `getTeamBySlug` уже возвращает cars (с сезонами), driverTeamSeasons (пилоты, сезоны) и
-  constructorStandings. Понадобится `listTeamSlugs` по образцу `listCarSlugs`.
-- У команд заполнены `championships`, но `wins` и `poles` — NULL. Выводить через `orDash`.
-- Team evolution timeline (выбор года меняет связанные машины) бриф помечает как
-  «желательно, не блокер». Если не укладывается — перенести в Milestone 14 с объяснением
-  в отчёте, это разрешено разделом про Milestone 6.
+- **Разделы Cars / Drivers / Teams — рабочий образец.** Строить на `FilterBar`,
+  detail-страницу через `generateStaticParams` + `dynamicParams = false`, никаких
+  `loading.tsx`, формулировка «в этом архиве» для ограниченных списков.
+- В DAL уже есть `listCircuits`, `getCircuitBySlug`, `listCircuitCountries`. Понадобится
+  `listCircuitSlugs`.
+- **Данные трасс — самое слабое место архива.** Из 12 трасс только у Монцы заполнены
+  длина и круги (взяты из брифа); у остальных `length_km`, `turns`, `laps_standard`,
+  `lap_record_*`, `first_gp_year` — NULL, а `data_confidence` = `uncertain`. Выводить
+  через `orDash` и не прятать пометку `uncertain`.
+- **Таблица `races` пуста** — race history, notable races и lap records показать не из
+  чего. `getCircuitBySlug` вернёт пустой массив `races`. Нужен честный empty-state, а не
+  выдуманные гонки. Если хотите наполнить — это отдельная задача по верификации данных.
+- Animated circuit visualization бриф помечает как nice-to-have; `layout_image_url` везде
+  NULL, так что рисовать нечего. Переносить в Milestone 14 с объяснением.
 
 ### Решение пользователя по статистике (2026-09-04)
 
