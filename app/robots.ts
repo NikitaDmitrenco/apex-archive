@@ -7,7 +7,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/"],
+        // Keep API endpoints and the auth flow out of the index — they're either internal
+        // (API routes) or contain token-bearing URLs that should not be searchable.
+        disallow: ["/api/", "/auth/", "/account", "/login", "/signup"],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

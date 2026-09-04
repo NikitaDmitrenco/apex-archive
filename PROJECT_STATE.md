@@ -5,19 +5,19 @@
 > Не доверять этому файлу слепо — при расхождении с фактическим кодом доверять коду и
 > исправлять этот файл.
 
-Last updated: 2026-09-04 (Milestones 7–14 completed locally; awaiting user push + Vercel deploy)
+Last updated: 2026-09-04 (Milestones 0–14 completed locally; awaiting user push + Vercel deploy)
 
 ---
 
 ## Current milestone
 
-MVP-скоуп (Milestones 0–13) полностью реализован локально; Milestone 14 (Comparison +
-History Timeline) — реализован. Осталось: коммит, пуш и подключение Vercel — это делает
-пользователь.
+MVP (Milestones 0–13) и Milestone 14 (Comparison + Eras + Stories + Auth/Favorites +
+AI Assistant) — реализованы локально. Осталось: пуш в GitHub, накатить миграцию
+`favorites`, подключить Vercel, ввести секреты — это делает пользователь.
 
 ## Overall progress
 
-~100% кодовой части MVP + первый кусок Milestone 14. Деплой — ручное действие пользователя.
+~100% кодовой части MVP + Milestone 14 кроме 3D viewer (нет ассетов).
 
 ## Completed
 
@@ -66,20 +66,37 @@ History Timeline) — реализован. Осталось: коммит, пу
 - **Milestone 13 — Deployment:** `vercel.json` (region `fra1` под Supabase `aws-1-eu-west-1`,
   security headers), `app/sitemap.ts`, `app/robots.ts`, раздел Deployment в README.
   Подключение Vercel и ввод секретов — пользователь.
-- **Milestone 14 (частично):** Comparison (`/compare?a=...&b=...` — side-by-side или форма),
-  Interactive History Timeline (`/eras` — восемь эпох из `ERAS` с редакционными параграфами
-  и линками на машины эпохи). Из M14 не реализовано: Favorites, User accounts, 3D viewer,
-  AI Assistant — требуют auth/Storage/3D-ассетов/OpenAI и не входят в текущий скоуп.
+- **Milestone 14 — Optional features (без 3D):**
+  - **Comparison** (`/compare?a=...&b=...`) — side-by-side или форма, HIGHER/LOWER бейджи.
+  - **Interactive History Timeline** (`/eras`) — восемь эпох из `ERAS` с редакционными
+    параграфами, линки на машины эпохи и сезоны диапазона.
+  - **Stories editorial section** (`/stories`, `/stories/[slug]`) — индекс и просмотр
+    статей из `articles`-таблицы; markdown рендерится через `marked` + `isomorphic-dompurify`;
+    5 курированных эссе в `lib/db/seed/articles.ts`.
+  - **User accounts (Supabase Auth)** — `/login`, `/signup`, `/account`, `/auth/confirm`,
+    `/auth/signout`; email/password flow; `proxy.ts` (Next 16 заменил `middleware.ts`)
+    рефрешит сессию через `@supabase/ssr`. `lib/env.ts` Supabase-переменные — optional.
+  - **Favorites** — новая таблица `favorites` + DAL (`isFavorited`, `toggleFavorite`,
+    `listFavorites`); кнопка `★ Save` на каждой detail-странице (cars/drivers/teams/
+    circuits/seasons); список сохранённого на `/account`.
+  - **AI Archive Assistant** (`/assistant`) — OpenAI function calling с 8 типизированными
+    инструментами; запросы проходят через существующий DAL (никакого свободного SQL от
+    LLM напрямую); degrade gracefully без `OPENAI_API_KEY` (503).
+  - **Из M14 НЕ сделано:** 3D car viewer — требует 3D-ассеты (GLTF/USDZ), которых нет в
+    проекте и которые нельзя сгенерировать без источника.
 
 ## In progress
 
-- none (всё приостановлено до пуша пользователем и деплоя)
+- none (всё приостановлено до пуша пользователем, наката миграции и деплоя)
 
 ## Not completed
 
 - Деплой на Vercel — действие пользователя.
-- Не вошло в Milestone 14 (требуют отдельного решения пользователя): Favorites,
-  User accounts (Supabase Auth), 3D car viewer, AI Archive Assistant, Stories.
+- Миграция `favorites` накатывается на Supabase (`npm run db:generate && npm run db:migrate`).
+- Настройка Supabase Auth (включить email/password в Dashboard, настроить redirect URL на
+  `${NEXT_PUBLIC_SITE_URL}/auth/confirm`).
+- Ввод `OPENAI_API_KEY` для активации AI Assistant (без него — 503).
+- 3D car viewer — не реализован (нет 3D-ассетов).
 
 ## Technical decisions
 
@@ -105,14 +122,17 @@ History Timeline) — реализован. Осталось: коммит, пу
 | Node.js                     | v24.14.0   | Требование Next 16 — `>=20.9.0`.                                                                                                                                                                                                                    |
 
 Установлено на Milestone 2: `drizzle-orm` **0.45.2**, `drizzle-kit` **0.31.10**,
-`postgres` **3.4.9** (драйвер postgres.js), `zod` **4.5.4**, `dotenv` **17.4.2** (dev),
+`postgres` **3.4.9` (драйвер postgres.js), `zod` **4.5.4**, `dotenv` **17.4.2** (dev),
 `tsx` **(dev)** — для запуска seed/verify вне Next.
 
-`@supabase/supabase-js` **сознательно не установлен**: доступ к БД идёт через Drizzle +
-postgres.js по `DATABASE_URL`. Клиент Supabase понадобится только для Storage (медиа) и
-Auth (Milestone 14) — ставить тогда, а не заранее.
+Установлено на Milestone 14: `@supabase/supabase-js` + `@supabase/ssr` (для Auth через
+email/password), `openai` **7.10.0** (для AI Assistant function calling), `marked`
+**18.x** + `isomorphic-dompurify` **4.x** (для рендера markdown в Stories).
 
-Ещё не установлены: `framer-motion` / `gsap` (Milestone 11), `recharts` (по необходимости).
+Сознательно не установлено: `framer-motion` / `gsap` (анимации отложены — design намеренно
+сдержанный, бриф прямо требует «meaningful, not for their own sake»); `recharts` (графики
+не понадобились при текущем объёме данных); `@react-three/fiber` + 3D-ассеты (3D viewer
+не реализован — нет моделей).
 
 ## Architecture decisions
 

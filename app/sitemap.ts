@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { listArticleSlugs } from "@/lib/db/queries/articles";
 import { listCarSlugs } from "@/lib/db/queries/cars";
 import { listCircuitSlugs } from "@/lib/db/queries/circuits";
 import { listDriverSlugs } from "@/lib/db/queries/drivers";
@@ -7,12 +8,13 @@ import { listTeamSlugs } from "@/lib/db/queries/teams";
 import { SITE_URL } from "@/lib/seo";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [cars, drivers, teams, circuits, seasons] = await Promise.all([
+  const [cars, drivers, teams, circuits, seasons, stories] = await Promise.all([
     listCarSlugs(),
     listDriverSlugs(),
     listTeamSlugs(),
     listCircuitSlugs(),
     listSeasonYears(),
+    listArticleSlugs(),
   ]);
 
   const staticRoutes = [
@@ -26,11 +28,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/about",
     "/compare",
     "/eras",
+    "/stories",
+    "/assistant",
   ].map((path) => ({
     url: `${SITE_URL}${path}`,
     lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: path === "" ? 1 : 0.7,
+    changeFrequency: path === "" ? ("weekly" as const) : ("monthly" as const),
+    priority: path === "" ? 1 : 0.6,
   }));
 
   const carRoutes = cars.map((slug) => ({
@@ -68,6 +72,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
+  const storyRoutes = stories.map((slug) => ({
+    url: `${SITE_URL}/stories/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.5,
+  }));
+
   return [
     ...staticRoutes,
     ...carRoutes,
@@ -75,5 +86,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...teamRoutes,
     ...circuitRoutes,
     ...seasonRoutes,
+    ...storyRoutes,
   ];
 }

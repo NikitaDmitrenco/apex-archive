@@ -103,16 +103,33 @@ the **session pooler** — same host as the transaction pooler, port 5432.
 ## Project structure
 
 ```
-app/            routes (App Router)
-  (marketing)/  landing and about
+app/                    routes (App Router)
+  (marketing)/          landing and about
   cars/ drivers/ teams/ circuits/ seasons/ search/
+  stories/              editorial section
+  compare/ eras/        M14 (mobile-menu only)
+  assistant/            AI Archive Assistant page
+  login/ signup/ account/ auth/   Supabase Auth
+  api/assistant/        POST endpoint for the AI Assistant
 components/
-  ui/           shadcn primitives and shared design primitives
-  archive/      domain components
-  layout/       header, footer, mobile menu
+  ui/                   shadcn primitives and shared design primitives
+  archive/              domain components (cars, drivers, teams, circuits,
+                        seasons, search, stories, comparison, eras, favorite
+                        button, markdown renderer)
+  account/              favorites listing
+  layout/               header, footer, mobile menu
 lib/
-  constants/    navigation and other static content
-  utils.ts      cn() helper
+  constants/            navigation and other static content (eras)
+  db/                   Drizzle schema, DAL queries, migrations, seed
+  supabase/             SSR-aware Supabase clients (server, browser, middleware)
+  auth/                 server actions and current-user queries
+  ai/                   OpenAI tools, executor, system prompt
+  validation/           Zod schemas for filter inputs
+  seo.ts                buildMetadata() helper + site constants
+  env.ts                validated server env (DB required, others optional)
+  format.ts             orDash, formatPoints, formatEngine
+  search-params.ts      withoutBlanks
+proxy.ts                Next 16 session-refresh proxy (was middleware.ts)
 ```
 
 ## Deployment
@@ -123,17 +140,25 @@ The project targets Vercel.
 
 1. **Push to GitHub** — already done. Repo: https://github.com/NikitaDmitrenco/apex-archive.
 2. **Connect to Vercel** — sign in to vercel.com/nikita-7472 and click "Add New Project". Import `NikitaDmitrenco/apex-archive`.
-3. **Set environment variables** in Vercel → Project Settings → Environment Variables:
+3. **Apply the favorites migration** — the schema now includes a `favorites` table that does not exist on Supabase yet. From your local checkout:
+   ```bash
+   npm run db:generate
+   npm run db:migrate
+   ```
+4. **Set environment variables** in Vercel → Project Settings → Environment Variables:
    - `DATABASE_URL` — Supabase session pooler, port **5432** (NOT 6543 — see "Failed approaches" #9 in `PROJECT_STATE.md`). Format: `postgres://postgres.[ref]:[password]@aws-1-eu-west-1.pooler.supabase.com:5432/postgres`.
    - `DIRECT_URL` — same session pooler (used by drizzle-kit for migrations and seed).
    - `NEXT_PUBLIC_SITE_URL` — your production URL (e.g. `https://apex-archive.vercel.app`).
-   - Optional, when adding Supabase Storage (Milestone 14+):
+   - For **user accounts** (Supabase Auth):
      - `NEXT_PUBLIC_SUPABASE_URL`
      - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-     - `SUPABASE_SERVICE_ROLE_KEY`
-   - Optional, when adding AI assistant (Milestone 14):
+     - `SUPABASE_SERVICE_ROLE_KEY` (server only, never exposed to the browser)
+   - For **AI Assistant** (optional, otherwise `/assistant` returns 503):
      - `OPENAI_API_KEY`
-4. **First build** — Vercel builds automatically on push. The first build takes ~30 s.
+5. **Supabase Auth setup** (Dashboard → Authentication → Providers):
+   - Enable Email/Password.
+   - Set the email-confirmation redirect URL to `${NEXT_PUBLIC_SITE_URL}/auth/confirm`.
+6. **First build** — Vercel builds automatically on push. The first build takes ~30 s.
 
 ### Production build locally
 
@@ -154,6 +179,9 @@ Visit each route once on the production URL:
 - `/search?q=ferrari`
 - `/compare?a=ferrari-f2004&b=mercedes-w12`
 - `/eras`
+- `/stories`
+- `/assistant` (returns 503 if `OPENAI_API_KEY` is not configured)
+- `/login`, `/signup`, `/account` (the last redirects to `/login` when signed out)
 
 All should render without errors.
 
