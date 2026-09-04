@@ -10,6 +10,8 @@ import { carFiltersSchema } from "@/lib/validation/filters";
 
 export const metadata: Metadata = {
   title: "Cars",
+  description:
+    "Every Formula 1 car in the Apex Archive — searchable by era, team, engine, year, driver and championship-winning season.",
 };
 
 export default async function CarsPage({ searchParams }: PageProps<"/cars">) {

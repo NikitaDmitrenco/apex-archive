@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { ArchiveStats } from "@/components/archive/home/archive-stats";
 import { EditorialStatement } from "@/components/archive/home/editorial-statement";
 import { FeaturedCars } from "@/components/archive/home/featured-cars";
@@ -16,6 +18,11 @@ import {
   type SeasonListItem,
 } from "@/lib/db/queries/seasons";
 import { listTeams } from "@/lib/db/queries/teams";
+
+export const metadata: Metadata = {
+  description:
+    "The home of Apex Archive — the machines, the drivers, the circuits and the stories of Formula 1, 1950 through to the current season.",
+};
 
 /** Prerendered, but refreshed hourly so the current-season block cannot freeze at build time. */
 export const revalidate = 3600;

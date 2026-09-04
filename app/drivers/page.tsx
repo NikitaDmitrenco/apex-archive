@@ -10,6 +10,8 @@ import { withoutBlanks } from "@/lib/search-params";
 
 export const metadata: Metadata = {
   title: "Drivers",
+  description:
+    "The drivers of Formula 1 in the Apex Archive — filterable by nationality, team, active years and championship record.",
 };
 
 export default async function DriversPage({

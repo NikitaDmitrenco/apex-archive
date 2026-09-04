@@ -6,6 +6,7 @@ import { Container, Section } from "@/components/ui/container";
 import { Display, Eyebrow } from "@/components/ui/typography";
 import { getCarBySlug, listCarSlugs, listCars } from "@/lib/db/queries/cars";
 import { orDash } from "@/lib/format";
+import { buildMetadata } from "@/lib/seo";
 
 /**
  * Every car in the archive is prerendered and anything else is refused by the router.
@@ -30,10 +31,11 @@ export async function generateMetadata({
 
   if (!car) return { title: "Car not found" };
 
-  return {
+  return buildMetadata({
     title: car.name,
     description: `${car.name}, run by ${car.team.name} in ${car.season.year}. Specifications and related entries in the Apex Archive.`,
-  };
+    path: `/cars/${car.slug}`,
+  });
 }
 
 function SpecRow({ label, value }: { label: string; value: string }) {

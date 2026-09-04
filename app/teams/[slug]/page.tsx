@@ -14,6 +14,7 @@ import {
   listTeamSlugs,
 } from "@/lib/db/queries/teams";
 import { orDash } from "@/lib/format";
+import { buildMetadata } from "@/lib/seo";
 
 /** Same reasoning as the other detail pages: routing-level refusal gives a real 404. */
 export const dynamicParams = false;
@@ -31,10 +32,11 @@ export async function generateMetadata({
 
   if (!team) return { title: "Team not found" };
 
-  return {
+  return buildMetadata({
     title: team.name,
     description: `${team.name}, ${team.nationality}. Championships, cars, drivers and seasons in the Apex Archive.`,
-  };
+    path: `/teams/${team.slug}`,
+  });
 }
 
 function Stat({ label, value }: { label: string; value: string }) {

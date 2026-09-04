@@ -10,6 +10,7 @@ import {
   listDriverSlugs,
 } from "@/lib/db/queries/drivers";
 import { formatPoints, orDash } from "@/lib/format";
+import { buildMetadata } from "@/lib/seo";
 
 /** Same reasoning as the car detail page: routing-level refusal gives a real 404. */
 export const dynamicParams = false;
@@ -31,10 +32,11 @@ export async function generateMetadata({
     ? `${driver.championships}× world champion. `
     : "";
 
-  return {
+  return buildMetadata({
     title: driver.fullName,
     description: `${driver.fullName}, ${driver.nationality}. ${titles}Career record and related entries in the Apex Archive.`,
-  };
+    path: `/drivers/${driver.slug}`,
+  });
 }
 
 function Stat({ label, value }: { label: string; value: string }) {

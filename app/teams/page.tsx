@@ -10,6 +10,8 @@ import { teamFiltersSchema } from "@/lib/validation/filters";
 
 export const metadata: Metadata = {
   title: "Teams",
+  description:
+    "The constructors of Formula 1 in the Apex Archive — searchable by nationality, active status and championship record.",
 };
 
 export default async function TeamsPage({ searchParams }: PageProps<"/teams">) {
