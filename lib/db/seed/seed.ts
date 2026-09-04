@@ -10,12 +10,13 @@ import {
   driverStandings,
   drivers,
   driverTeamSeasons,
+  races,
   seasons,
   teams,
 } from "../schema";
+import { seedCircuits } from "./circuits";
 import {
   seedCars,
-  seedCircuits,
   seedConstructorStandings,
   seedDrivers,
   seedDriverStandings,
@@ -23,6 +24,7 @@ import {
   seedSeasons,
   seedTeams,
 } from "./data";
+import { seedRaces } from "./races";
 
 config({ path: ".env.local" });
 
@@ -134,16 +136,18 @@ async function seed() {
   const seasonIdByYear = new Map(seasonRows.map((row) => [row.year, row.id]));
 
   console.log("Seeding circuits...");
-  await db
+  const circuitRows = await db
     .insert(circuits)
     .values(
       seedCircuits.map((circuit) => ({
         slug: circuit.slug,
         name: circuit.name,
         country: circuit.country,
-        location: circuit.location ?? null,
-        lengthKm: circuit.lengthKm ?? null,
-        lapsStandard: circuit.lapsStandard ?? null,
+        location: circuit.location,
+        lengthKm: circuit.lengthKm,
+        turns: circuit.turns,
+        lapsStandard: circuit.lapsStandard,
+        firstGpYear: circuit.firstGpYear ?? null,
         dataConfidence: circuit.dataConfidence,
       })),
     )
@@ -154,11 +158,14 @@ async function seed() {
         country: sql`excluded.country`,
         location: sql`excluded.location`,
         lengthKm: sql`excluded.length_km`,
+        turns: sql`excluded.turns`,
         lapsStandard: sql`excluded.laps_standard`,
+        firstGpYear: sql`excluded.first_gp_year`,
         dataConfidence: sql`excluded.data_confidence`,
         updatedAt: new Date(),
       },
-    });
+    })
+    .returning({ id: circuits.id, slug: circuits.slug });
 
   console.log("Seeding cars...");
   const carRows = await db
@@ -193,6 +200,39 @@ async function seed() {
     .returning({ id: cars.id, slug: cars.slug });
 
   const carIdBySlug = new Map(carRows.map((row) => [row.slug, row.id]));
+
+  console.log("Seeding races...");
+  const circuitIdBySlug = new Map(circuitRows.map((row) => [row.slug, row.id]));
+
+  await db
+    .insert(races)
+    .values(
+      seedRaces.map((race) => ({
+        seasonId: requireSeasonId(seasonIdByYear, race.year),
+        circuitId: requireId(circuitIdBySlug, race.circuit, "circuit"),
+        roundNumber: race.round,
+        name: race.name,
+        date: race.date,
+        winnerDriverId: race.winnerDriver
+          ? requireId(driverIdBySlug, race.winnerDriver, "driver")
+          : null,
+        winnerTeamId: race.winnerTeam
+          ? requireId(teamIdBySlug, race.winnerTeam, "team")
+          : null,
+        dataConfidence: "verified" as const,
+      })),
+    )
+    .onConflictDoUpdate({
+      target: [races.seasonId, races.roundNumber],
+      set: {
+        circuitId: sql`excluded.circuit_id`,
+        name: sql`excluded.name`,
+        date: sql`excluded.date`,
+        winnerDriverId: sql`excluded.winner_driver_id`,
+        winnerTeamId: sql`excluded.winner_team_id`,
+        updatedAt: new Date(),
+      },
+    });
 
   console.log("Seeding standings...");
   await db
@@ -265,7 +305,7 @@ async function seed() {
     .onConflictDoNothing();
 
   console.log(
-    `Done. ${teamRows.length} teams, ${driverRows.length} drivers, ${seasonRows.length} seasons, ${seedCircuits.length} circuits, ${carRows.length} cars, ${links.length} links, ${seedDriverStandings.length} driver standings, ${seedConstructorStandings.length} constructor standings.`,
+    `Done. ${teamRows.length} teams, ${driverRows.length} drivers, ${seasonRows.length} seasons, ${circuitRows.length} circuits, ${carRows.length} cars, ${seedRaces.length} races, ${links.length} links, ${seedDriverStandings.length} driver standings, ${seedConstructorStandings.length} constructor standings.`,
   );
 }
 
