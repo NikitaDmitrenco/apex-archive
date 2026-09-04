@@ -324,6 +324,12 @@ driver↔team↔season, 23 строки личного зачёта и 11 — к
 - Программный `window.scrollTo` при открытом мобильном меню всё ещё двигает страницу
   (react-remove-scroll перехватывает колесо/тач, но не программный скролл). На реальное
   поведение пользователя не влияет.
+- Данные сезона 2026 — снимок на 12-й этап. Устареют после ближайшей гонки. Это не баг
+  кода, а свойство seed-подхода; обновляется перезапуском `npm run db:seed` со свежими
+  числами из formula1.com.
+- Изображений нет ни у одной сущности (`image_url`, `photo_url`, `logo_url`,
+  `layout_image_url` — везде NULL). Вёрстка построена типографически и переживает это.
+  Медиа появится, когда будет подключён Supabase Storage.
 
 ## Failed approaches
 
@@ -404,15 +410,17 @@ driver↔team↔season, 23 строки личного зачёта и 11 — к
 
 ## Environment / configuration
 
-- Git инициализирован, ветка `main`. Remote **не** настроен (GitHub-репозиторий ещё не
-  подключён — сделать на Milestone 13 или раньше по команде пользователя).
+- Git инициализирован, ветка `main`, **remote подключён пользователем вручную:**
+  `origin` → https://github.com/NikitaDmitrenco/apex-archive. `main` отслеживает
+  `origin/main`, всё синхронизировано.
 - `.gitignore` покрывает `node_modules`, `.next`, `.env*` (с исключением `!.env.example`),
   `.vercel`, логи, `.claude`.
 - `.env.example` содержит только имена переменных с комментариями. Реальных значений в
   репозитории нет.
-- `.env.local` **создан пользователем и заполнен** (`DATABASE_URL` — transaction pooler
-  :6543, `DIRECT_URL` — session pooler :5432, регион `aws-1-eu-west-1`). Файл в
-  `.gitignore`, проверено через `git check-ignore`. Секреты в репозиторий не попадают.
+- `.env.local` создан и заполнен. **Обе строки подключения — session pooler порт 5432**
+  (регион `aws-1-eu-west-1`): `DATABASE_URL` для приложения, `DIRECT_URL` для
+  drizzle-kit и seed. Транзакционный пул :6543 не использовать — см. "Failed approaches"
+  п.9. Файл в `.gitignore`, проверено через `git check-ignore`.
 - Node.js v24.14.0, npm 11.18.0, git 2.53.0 (Windows 11).
 - Supabase project: https://supabase.com/dashboard/project/graglvzassyzsyedraex (не подключён)
 - Vercel account: vercel.com/nikita-7472 (не подключён)
@@ -421,15 +429,23 @@ driver↔team↔season, 23 строки личного зачёта и 11 — к
 
 ## Deployment status
 
-- Не задеплоено. Vercel-проект не подключён, remote у git отсутствует.
+- Не задеплоено. Код на GitHub, Vercel-проект не подключён (Milestone 13).
 
 ## Git status
 
-- Ветка `main`, работа велась прямо в ней (правило «не работать в main» из раздела 8
-  вступает в силу с появлением CI/деплоя, то есть после Milestone 13; до этого прямые
-  коммиты в `main` допустимы).
+- Ветка `main`, remote `origin` = `NikitaDmitrenco/apex-archive`. Работа велась прямо в
+  `main` (правило «не работать в main» из раздела 8 вступает в силу с появлением
+  CI/деплоя, то есть после Milestone 13).
 - Коммиты Milestone 1: bootstrap + tooling + design + layout + routes + docs (6).
-- Коммиты Milestone 2: deps/env, schema+migration, DAL, seed, + финальный (см. `git log`).
+- Коммиты Milestone 2: deps/env, schema+migration, DAL, seed, verify+docs (5).
+- **Milestone 3 закоммичен пользователем вручную одним коммитом `f828ff9`, и у него
+  испорченное сообщение** (`t#  modified: lib/db/seed/data.ts` плюс управляющие символы) —
+  видимо, редактор коммита захватил текст статуса. Содержимое коммита корректное и полное
+  (24 файла, весь Milestone 3). Коммит уже запушен.
+  Исправление сообщения потребует `git commit --amend` + `git push --force`, то есть
+  перезаписи общей истории, — **делать только по явной команде пользователя**. Пока
+  оставлено как есть.
+- **Пуш выполняет пользователь.** Claude коммитит локально и не пушит без явной команды.
 
 ## Next milestone
 
@@ -479,4 +495,8 @@ championship-winning/driver) + detail-страницы с техническим
 - `npm run db:verify` — быстрый способ убедиться, что DAL и БД живы после изменений схемы.
 - Пользователь подтвердил: «Archive» в меню — не отдельная страница; системную тему не
   поддерживаем, только dark/light.
+- Репозиторий на GitHub: `NikitaDmitrenco/apex-archive`. **Пушит пользователь**, Claude
+  только коммитит локально. `git push --force` не выполнять никогда без явной команды.
+- Перед правкой главной страницы прочитать `components/archive/home/` — каждая секция
+  оформлена по-своему намеренно, приводить их к единому виду карточек нельзя.
 - Ждать команду пользователя перед стартом Milestone 3.
