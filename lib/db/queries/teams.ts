@@ -57,6 +57,20 @@ export async function getTeamBySlug(slug: string) {
   });
 }
 
+export async function listTeamSlugs(): Promise<string[]> {
+  const rows = await db.select({ slug: teams.slug }).from(teams);
+  return rows.map((row) => row.slug);
+}
+
+export async function listTeamNationalities(): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({ value: teams.nationality })
+    .from(teams)
+    .orderBy(asc(teams.nationality));
+
+  return rows.map((row) => row.value);
+}
+
 export async function getTeamChampionshipSeasons(teamId: string) {
   return db
     .select({ year: seasons.year })
