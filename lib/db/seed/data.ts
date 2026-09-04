@@ -1033,7 +1033,6 @@ export const seedCars: SeedCar[] = [
   },
 ];
 
-
 export type SeedDriverTeamSeason = {
   driver: string;
   team: string;
