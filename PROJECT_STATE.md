@@ -5,18 +5,17 @@
 > Не доверять этому файлу слепо — при расхождении с фактическим кодом доверять коду и
 > исправлять этот файл.
 
-Last updated: 2026-09-04 (Milestone 4 completed)
+Last updated: 2026-09-04 (Milestone 5 completed)
 
 ---
 
 ## Current milestone
 
-Milestone 4 — Cars (завершён, ожидает подтверждения пользователя)
+Milestone 5 — Drivers (завершён, ожидает подтверждения пользователя)
 
 ## Overall progress
 
-~36% (архитектура, скелет, БД, слой доступа, главная страница и раздел Cars —
-каталог с фильтрами и detail-страницы)
+~44% (архитектура, скелет, БД, слой доступа, главная страница, разделы Cars и Drivers)
 
 ## Completed
 
@@ -32,6 +31,8 @@ Milestone 4 — Cars (завершён, ожидает подтверждени�
 - **Milestone 4 — Cars:** каталог с шестью фильтрами + detail-страницы с техническим
   разбором и связями. Найдена и устранена причина «залипания на Loading» — см.
   "Failed approaches" п.12.
+- **Milestone 5 — Drivers:** каталог с фильтрами + detail-страницы с карьерным таймлайном,
+  таблицей финишей по сезонам и связями к cars / teams / seasons.
 
 ## In progress
 
@@ -39,7 +40,7 @@ Milestone 4 — Cars (завершён, ожидает подтверждени�
 
 ## Not completed
 
-- Milestones 5–14
+- Milestones 6–14
 
 ## Technical decisions
 
@@ -255,12 +256,11 @@ standings, а не только чемпион.
 ## Routes implemented
 
 - **`/` — готова полностью** (Milestone 3), на реальных данных, ISR `revalidate = 3600`.
-- **`/cars` — готова** (Milestone 4). Динамическая (`ƒ`), потому что читает `searchParams`.
-- **`/cars/[slug]` — готова** (Milestone 4). Все 18 машин предгенерированы,
-  `dynamicParams = false` → неизвестный slug даёт настоящий 404.
-- Остальные 10 MVP-роутов рендерятся заглушками: `/about`, `/drivers`, `/drivers/[slug]`,
-  `/teams`, `/teams/[slug]`, `/circuits`, `/circuits/[slug]`, `/seasons`,
-  `/seasons/[year]`, `/search`.
+- **`/cars` и `/drivers` — готовы.** Динамические (`ƒ`), потому что читают `searchParams`.
+- **`/cars/[slug]` и `/drivers/[slug]` — готовы.** 18 машин и 40 пилотов предгенерированы,
+  `dynamicParams = false` → неизвестный slug даёт настоящий 404 (проверено).
+- Остальные 8 MVP-роутов рендерятся заглушками: `/about`, `/teams`, `/teams/[slug]`,
+  `/circuits`, `/circuits/[slug]`, `/seasons`, `/seasons/[year]`, `/search`.
 - `app/error.tsx` и `app/not-found.tsx` есть. **`loading.tsx` намеренно отсутствует** —
   см. "Failed approaches" п.12.
 
@@ -287,11 +287,15 @@ standings, а не только чемпион.
   Каждая секция оформлена по-своему (индекс, сетка, таблица, крупные цифры) — бриф прямо
   запрещает «dashboard из одинаковых карточек».
 - `lib/format.ts` — `orDash` (NULL → «—»), `formatPoints`, `formatEngine`.
-- `archive/car-filters.tsx` (Milestone 4) — клиентский компонент. Это `<form method="get">`,
-  то есть фильтры работают и без JS; при наличии JS `onSubmit` перехватывает отправку и
-  выкидывает пустые параметры, чтобы URL был чистым (`?era=v8`, а не
-  `?era=v8&decade=&teamSlug=...`), а `onChange` применяет фильтр без нажатия кнопки.
-  Кнопка «Apply» оставлена для случая без JS.
+- **`archive/filter-bar.tsx` (Milestone 5) — общая панель фильтров** для всех каталогов:
+  `FilterBar` (форма), `FilterSelect`, `FilterToggle`. Это `<form method="get">`, поэтому
+  фильтры работают и без JS; при наличии JS `onSubmit` перехватывает отправку и выкидывает
+  пустые параметры, чтобы URL был чистым (`?era=v8`, а не `?era=v8&decade=&teamSlug=...`),
+  а `onChange` применяет фильтр без нажатия кнопки. Кнопка «Apply» оставлена для
+  случая без JS. **Каталоги Teams/Circuits/Seasons строить на нём же**, не копируя форму.
+- `archive/car-filters.tsx`, `archive/driver-filters.tsx` — тонкие обёртки над `FilterBar`,
+  задают только набор полей.
+- `lib/search-params.ts` — `withoutBlanks()`, общий для всех каталогов.
 - `archive/car-card.tsx` (Milestone 4) — рамка изображения рендерится всегда, с надписью
   «No image yet», когда `image_url` пуст.
 - `lib/constants/eras.ts` (Milestone 4) — восемь эпох по формуле двигателя,
@@ -500,26 +504,27 @@ driver↔team↔season, 23 строки личного зачёта и 11 — к
 
 ## Next milestone
 
-**Milestone 5 — Drivers.** Начинать только по команде пользователя.
+**Milestone 6 — Teams.** Начинать только по команде пользователя.
 
-Каталог + detail-страницы по разделу 4.3 MASTERPROMPT: статистика карьеры, career timeline,
-связи с cars / teams / seasons.
+Каталог + detail-страницы по разделу 4.4 MASTERPROMPT: championships, wins, poles, drivers,
+cars, seasons, timeline.
 
 Что учесть:
 
-- **Раздел Cars — рабочий образец.** Повторять его приёмы: `generateStaticParams` +
-  `dynamicParams = false` для detail-страницы (иначе мягкий 404), форма-фильтр как GET с
-  перехватом `onSubmit`, никаких `loading.tsx`.
-- В DAL уже есть `listDrivers`, `getDriverBySlug`, `getDriverChampionshipSeasons`,
-  `listDriverNationalities`. Понадобится добавить `listDriverSlugs` по образцу
-  `listCarSlugs`.
-- **Главная ловушка milestone'а — статистика.** У пилотов заполнено только
-  `championships`; `wins`, `poles`, `podiums`, `race_starts`, `career_points`, даты
-  рождения — NULL. Раздел 4.3 брифа требует эти числа. **Нельзя показать 0 вместо
-  неизвестного и нельзя вывести их агрегатом по `results` — таблица пуста.** Варианты:
-  верифицировать и дозалить реальные тоталы (правильный путь, объём работы) либо честно
-  показывать «—». Обсудить с пользователем в начале milestone.
-- Career timeline можно строить на `driver_team_seasons` — там реальные данные (40 связей).
+- **Разделы Cars и Drivers — рабочий образец.** Строить на `FilterBar`, detail-страницу
+  через `generateStaticParams` + `dynamicParams = false`, никаких `loading.tsx`.
+- `getTeamBySlug` уже возвращает cars (с сезонами), driverTeamSeasons (пилоты, сезоны) и
+  constructorStandings. Понадобится `listTeamSlugs` по образцу `listCarSlugs`.
+- У команд заполнены `championships`, но `wins` и `poles` — NULL. Выводить через `orDash`.
+- Team evolution timeline (выбор года меняет связанные машины) бриф помечает как
+  «желательно, не блокер». Если не укладывается — перенести в Milestone 14 с объяснением
+  в отчёте, это разрешено разделом про Milestone 6.
+
+### Решение пользователя по статистике (2026-09-04)
+
+Незаполненные карьерные показатели пока **показывать прочерком**, верификацию и дозаливку
+реальных тоталов отложили — вернуться к вопросу отдельно. Не тратить время milestone'а на
+сбор этих чисел без отдельной команды.
 
 ## Important notes for the next Claude session
 
