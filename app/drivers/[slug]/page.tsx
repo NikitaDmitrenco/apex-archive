@@ -92,9 +92,17 @@ export default async function DriverDetailPage({
         {driver.championships ? (
           <p className="text-primary mt-6 font-mono text-sm tracking-[0.16em] uppercase">
             {driver.championships}× World Champion
-            {titleYears.length > 0
-              ? ` · ${titleYears.map((row) => row.year).join(", ")}`
-              : ""}
+          </p>
+        ) : null}
+
+        {/*
+          Only the title years among seeded seasons, which is usually fewer than the career
+          total above. Saying so avoids reading as a contradiction.
+        */}
+        {titleYears.length > 0 ? (
+          <p className="text-muted-foreground mt-3 font-mono text-[0.7rem] tracking-[0.14em] uppercase">
+            Title seasons in this archive ·{" "}
+            {titleYears.map((r) => r.year).join(", ")}
           </p>
         ) : null}
 
