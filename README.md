@@ -117,8 +117,49 @@ lib/
 
 ## Deployment
 
-The project targets Vercel. Connecting the repository and entering production secrets is
-done manually by the repository owner — see Milestone 13 in `MASTERPROMPT.md`.
+The project targets Vercel.
+
+### One-time setup (the user does this manually)
+
+1. **Push to GitHub** — already done. Repo: https://github.com/NikitaDmitrenco/apex-archive.
+2. **Connect to Vercel** — sign in to vercel.com/nikita-7472 and click "Add New Project". Import `NikitaDmitrenco/apex-archive`.
+3. **Set environment variables** in Vercel → Project Settings → Environment Variables:
+   - `DATABASE_URL` — Supabase session pooler, port **5432** (NOT 6543 — see "Failed approaches" #9 in `PROJECT_STATE.md`). Format: `postgres://postgres.[ref]:[password]@aws-1-eu-west-1.pooler.supabase.com:5432/postgres`.
+   - `DIRECT_URL` — same session pooler (used by drizzle-kit for migrations and seed).
+   - `NEXT_PUBLIC_SITE_URL` — your production URL (e.g. `https://apex-archive.vercel.app`).
+   - Optional, when adding Supabase Storage (Milestone 14+):
+     - `NEXT_PUBLIC_SUPABASE_URL`
+     - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+     - `SUPABASE_SERVICE_ROLE_KEY`
+   - Optional, when adding AI assistant (Milestone 14):
+     - `OPENAI_API_KEY`
+4. **First build** — Vercel builds automatically on push. The first build takes ~30 s.
+
+### Production build locally
+
+```bash
+npm install
+npm run build
+npm run start
+```
+
+The production build will run `generateStaticParams` for every detail page, which requires the DATABASE_URL to be live. With the dummy `.env.local` already in place, `npm run build` will fail at the static-params step (it tries to query a non-existent DB). Run it on Vercel with real credentials.
+
+### Smoke test after deployment
+
+Visit each route once on the production URL:
+- `/`
+- `/cars`, `/drivers`, `/teams`, `/circuits`, `/seasons`
+- Pick one slug from each and visit its detail page
+- `/search?q=ferrari`
+- `/compare?a=ferrari-f2004&b=mercedes-w12`
+- `/eras`
+
+All should render without errors.
+
+### Region
+
+`vercel.json` pins deployment to `fra1` because the Supabase project is in `aws-1-eu-west-1`. This minimises DB latency.
 
 ## Project documents
 
