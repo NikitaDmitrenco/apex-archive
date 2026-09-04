@@ -36,8 +36,8 @@ npm run dev
 
 The app runs at http://localhost:3000.
 
-No environment variables are required yet — the app has no database connection until
-Milestone 2. Copy the template anyway so the file exists when it is needed.
+Fill in `DATABASE_URL` and `DIRECT_URL` before running anything that touches the database —
+see [Database](#database) below. Pages that read no data build without them.
 
 ## Scripts
 
@@ -50,6 +50,11 @@ Milestone 2. Copy the template anyway so the file exists when it is needed.
 | `npm run typecheck`    | `tsc --noEmit`                             |
 | `npm run format`       | Format with Prettier                       |
 | `npm run format:check` | Verify formatting without writing          |
+| `npm run db:generate`  | Generate a migration from the schema       |
+| `npm run db:migrate`   | Apply pending migrations                   |
+| `npm run db:seed`      | Load the curated seed set (idempotent)     |
+| `npm run db:verify`    | Smoke-test every data access layer query   |
+| `npm run db:studio`    | Open Drizzle Studio against the database   |
 
 `npm run typecheck` needs generated route types, so run `npm run build` (or start the dev
 server) at least once after cloning.
@@ -63,16 +68,37 @@ repository.
 | Variable                        | Needed from  |
 | ------------------------------- | ------------ |
 | `DATABASE_URL`                  | Milestone 2  |
+| `DIRECT_URL`                    | Milestone 2  |
 | `NEXT_PUBLIC_SUPABASE_URL`      | Milestone 2  |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Milestone 2  |
 | `SUPABASE_SERVICE_ROLE_KEY`     | Milestone 2  |
 | `NEXT_PUBLIC_SITE_URL`          | Milestone 11 |
 | `OPENAI_API_KEY`                | Milestone 14 |
 
-## Database migrations
+## Database
 
-Not yet applicable. Drizzle schema, migrations and the seed script arrive in Milestone 2;
-this section will document `drizzle-kit generate` / `migrate` and the seed command then.
+Schema lives in [`lib/db/schema.ts`](lib/db/schema.ts). After changing it:
+
+```bash
+npm run db:generate
+npm run db:migrate
+```
+
+To load the starter data and check the queries against it:
+
+```bash
+npm run db:seed
+npm run db:verify
+```
+
+The seed is idempotent — it upserts by slug, so re-running refreshes rows rather than
+duplicating them. Read [`lib/db/seed/DATA_SOURCES.md`](lib/db/seed/DATA_SOURCES.md) before
+editing any of the data: unverified figures are deliberately left null, because null renders
+as unknown while a wrong number renders as a fact.
+
+**Connection strings.** Supabase's direct connection (`db.<ref>.supabase.co`) resolves over
+IPv6 only. On an IPv4-only network it fails with `ENOTFOUND`, so `DIRECT_URL` should point at
+the **session pooler** — same host as the transaction pooler, port 5432.
 
 ## Project structure
 
