@@ -78,3 +78,8 @@ export async function listCircuitCountries(): Promise<string[]> {
 
   return rows.map((row) => row.value);
 }
+
+export async function listCircuitSlugs(): Promise<string[]> {
+  const rows = await db.select({ slug: circuits.slug }).from(circuits);
+  return rows.map((row) => row.slug);
+}
