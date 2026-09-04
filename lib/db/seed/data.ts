@@ -114,6 +114,53 @@ export const seedTeams: SeedTeam[] = [
     championships: 0,
     dataConfidence: "placeholder",
   },
+  // The rest of the 2026 grid. None has won a constructors' title under its current name,
+  // which is why each shows zero rather than an unknown.
+  {
+    slug: "aston-martin",
+    name: "Aston Martin",
+    nationality: "British",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "alpine",
+    name: "Alpine",
+    nationality: "French",
+    bio: "The Enstone entry's lineage includes Renault's 2005 and 2006 constructors' titles, which were won under a different constructor name and are not counted here.",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "racing-bulls",
+    name: "Racing Bulls",
+    nationality: "Italian",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "haas",
+    name: "Haas F1 Team",
+    nationality: "American",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "audi",
+    name: "Audi",
+    nationality: "German",
+    bio: "Took over the Sauber entry for 2026.",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "cadillac",
+    name: "Cadillac",
+    nationality: "American",
+    bio: "Joined the championship for 2026.",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
 ];
 
 export type SeedDriver = {
@@ -305,6 +352,148 @@ export const seedDrivers: SeedDriver[] = [
     championships: 4,
     dataConfidence: "placeholder",
   },
+  // The rest of the 2026 grid. Career start years are omitted because they were not
+  // verified; a zero title count, by contrast, is a fact taken from the champions list.
+  {
+    slug: "lando-norris",
+    fullName: "Lando Norris",
+    nationality: "British",
+    championships: 1,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "kimi-antonelli",
+    fullName: "Kimi Antonelli",
+    nationality: "Italian",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "george-russell",
+    fullName: "George Russell",
+    nationality: "British",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "charles-leclerc",
+    fullName: "Charles Leclerc",
+    nationality: "Monégasque",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "oscar-piastri",
+    fullName: "Oscar Piastri",
+    nationality: "Australian",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "isack-hadjar",
+    fullName: "Isack Hadjar",
+    nationality: "French",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "liam-lawson",
+    fullName: "Liam Lawson",
+    nationality: "New Zealander",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "pierre-gasly",
+    fullName: "Pierre Gasly",
+    nationality: "French",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "arvid-lindblad",
+    fullName: "Arvid Lindblad",
+    nationality: "British",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "franco-colapinto",
+    fullName: "Franco Colapinto",
+    nationality: "Argentine",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "oliver-bearman",
+    fullName: "Oliver Bearman",
+    nationality: "British",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "gabriel-bortoleto",
+    fullName: "Gabriel Bortoleto",
+    nationality: "Brazilian",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "nico-hulkenberg",
+    fullName: "Nico Hülkenberg",
+    nationality: "German",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "carlos-sainz",
+    fullName: "Carlos Sainz",
+    nationality: "Spanish",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "alexander-albon",
+    fullName: "Alexander Albon",
+    nationality: "Thai",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "esteban-ocon",
+    fullName: "Esteban Ocon",
+    nationality: "French",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "yuki-tsunoda",
+    fullName: "Yuki Tsunoda",
+    nationality: "Japanese",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "lance-stroll",
+    fullName: "Lance Stroll",
+    nationality: "Canadian",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "valtteri-bottas",
+    fullName: "Valtteri Bottas",
+    nationality: "Finnish",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
+  {
+    slug: "sergio-perez",
+    fullName: "Sergio Pérez",
+    nationality: "Mexican",
+    championships: 0,
+    dataConfidence: "placeholder",
+  },
 ];
 
 export type SeedSeason = {
@@ -389,11 +578,241 @@ export const seedSeasons: SeedSeason[] = [
     dataConfidence: "verified",
   },
   {
-    year: 2026,
+    year: 2025,
+    worldChampionDriver: "lando-norris",
+    constructorsChampionTeam: "mclaren",
     summary:
-      "In progress at the time of this seed. No champion is recorded because none has been decided.",
+      "Norris took his first title by two points, and McLaren's first drivers' championship since 2008.",
     dataConfidence: "verified",
   },
+  {
+    year: 2026,
+    summary:
+      "Season in progress. Standings are current after round 12, the Dutch Grand Prix of 23 August 2026. No champion is recorded because none has been decided.",
+    dataConfidence: "verified",
+  },
+];
+
+export type SeedStanding = {
+  year: number;
+  position: number;
+  points: number;
+  /** Undefined means unknown, which is not the same as zero. */
+  wins?: number;
+};
+
+export type SeedDriverStanding = SeedStanding & {
+  driver: string;
+  team: string;
+};
+
+/**
+ * A dated snapshot, not a live feed: these are the standings after round 12 of 2026.
+ * Podium counts are omitted because the source table does not carry them.
+ * Refresh with each race — see DATA_SOURCES.md.
+ */
+export const seedDriverStandings: SeedDriverStanding[] = [
+  {
+    year: 2026,
+    position: 1,
+    driver: "kimi-antonelli",
+    team: "mercedes",
+    points: 242,
+    wins: 6,
+  },
+  {
+    year: 2026,
+    position: 2,
+    driver: "george-russell",
+    team: "mercedes",
+    points: 183,
+    wins: 2,
+  },
+  {
+    year: 2026,
+    position: 3,
+    driver: "lewis-hamilton",
+    team: "ferrari",
+    points: 183,
+    wins: 1,
+  },
+  {
+    year: 2026,
+    position: 4,
+    driver: "lando-norris",
+    team: "mclaren",
+    points: 159,
+    wins: 2,
+  },
+  {
+    year: 2026,
+    position: 5,
+    driver: "charles-leclerc",
+    team: "ferrari",
+    points: 155,
+    wins: 1,
+  },
+  {
+    year: 2026,
+    position: 6,
+    driver: "max-verstappen",
+    team: "red-bull-racing",
+    points: 112,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 7,
+    driver: "oscar-piastri",
+    team: "mclaren",
+    points: 104,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 8,
+    driver: "isack-hadjar",
+    team: "red-bull-racing",
+    points: 68,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 9,
+    driver: "liam-lawson",
+    team: "racing-bulls",
+    points: 49,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 10,
+    driver: "pierre-gasly",
+    team: "alpine",
+    points: 44,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 11,
+    driver: "arvid-lindblad",
+    team: "racing-bulls",
+    points: 23,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 12,
+    driver: "franco-colapinto",
+    team: "alpine",
+    points: 19,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 13,
+    driver: "oliver-bearman",
+    team: "haas",
+    points: 18,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 14,
+    driver: "gabriel-bortoleto",
+    team: "audi",
+    points: 10,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 15,
+    driver: "nico-hulkenberg",
+    team: "audi",
+    points: 6,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 16,
+    driver: "carlos-sainz",
+    team: "williams",
+    points: 6,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 17,
+    driver: "alexander-albon",
+    team: "williams",
+    points: 5,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 18,
+    driver: "esteban-ocon",
+    team: "haas",
+    points: 3,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 19,
+    driver: "fernando-alonso",
+    team: "aston-martin",
+    points: 3,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 20,
+    driver: "yuki-tsunoda",
+    team: "racing-bulls",
+    points: 0,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 21,
+    driver: "lance-stroll",
+    team: "aston-martin",
+    points: 0,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 22,
+    driver: "valtteri-bottas",
+    team: "cadillac",
+    points: 0,
+    wins: 0,
+  },
+  {
+    year: 2026,
+    position: 23,
+    driver: "sergio-perez",
+    team: "cadillac",
+    points: 0,
+    wins: 0,
+  },
+];
+
+export type SeedConstructorStanding = SeedStanding & { team: string };
+
+/** Team win counts are derived from the twelve race winners, and sum to twelve. */
+export const seedConstructorStandings: SeedConstructorStanding[] = [
+  { year: 2026, position: 1, team: "mercedes", points: 425, wins: 8 },
+  { year: 2026, position: 2, team: "ferrari", points: 338, wins: 2 },
+  { year: 2026, position: 3, team: "mclaren", points: 263, wins: 2 },
+  { year: 2026, position: 4, team: "red-bull-racing", points: 186, wins: 0 },
+  { year: 2026, position: 5, team: "racing-bulls", points: 66, wins: 0 },
+  { year: 2026, position: 6, team: "alpine", points: 63, wins: 0 },
+  { year: 2026, position: 7, team: "haas", points: 21, wins: 0 },
+  { year: 2026, position: 8, team: "audi", points: 16, wins: 0 },
+  { year: 2026, position: 9, team: "williams", points: 11, wins: 0 },
+  { year: 2026, position: 10, team: "aston-martin", points: 3, wins: 0 },
+  { year: 2026, position: 11, team: "cadillac", points: 0, wins: 0 },
 ];
 
 export type SeedCar = {

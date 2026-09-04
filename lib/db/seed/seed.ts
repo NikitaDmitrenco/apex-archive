@@ -6,6 +6,8 @@ import postgres from "postgres";
 import {
   cars,
   circuits,
+  constructorStandings,
+  driverStandings,
   drivers,
   driverTeamSeasons,
   seasons,
@@ -14,7 +16,9 @@ import {
 import {
   seedCars,
   seedCircuits,
+  seedConstructorStandings,
   seedDrivers,
+  seedDriverStandings,
   seedDriverTeamSeasons,
   seedSeasons,
   seedTeams,
@@ -190,11 +194,68 @@ async function seed() {
 
   const carIdBySlug = new Map(carRows.map((row) => [row.slug, row.id]));
 
+  console.log("Seeding standings...");
+  await db
+    .insert(driverStandings)
+    .values(
+      seedDriverStandings.map((standing) => ({
+        seasonId: requireSeasonId(seasonIdByYear, standing.year),
+        driverId: requireId(driverIdBySlug, standing.driver, "driver"),
+        teamId: requireId(teamIdBySlug, standing.team, "team"),
+        position: standing.position,
+        points: standing.points,
+        wins: standing.wins ?? null,
+        dataConfidence: "verified" as const,
+      })),
+    )
+    .onConflictDoUpdate({
+      target: [driverStandings.seasonId, driverStandings.driverId],
+      set: {
+        teamId: sql`excluded.team_id`,
+        position: sql`excluded.position`,
+        points: sql`excluded.points`,
+        wins: sql`excluded.wins`,
+      },
+    });
+
+  await db
+    .insert(constructorStandings)
+    .values(
+      seedConstructorStandings.map((standing) => ({
+        seasonId: requireSeasonId(seasonIdByYear, standing.year),
+        teamId: requireId(teamIdBySlug, standing.team, "team"),
+        position: standing.position,
+        points: standing.points,
+        wins: standing.wins ?? null,
+        dataConfidence: "verified" as const,
+      })),
+    )
+    .onConflictDoUpdate({
+      target: [constructorStandings.seasonId, constructorStandings.teamId],
+      set: {
+        position: sql`excluded.position`,
+        points: sql`excluded.points`,
+        wins: sql`excluded.wins`,
+      },
+    });
+
   console.log("Seeding driver/team/season links...");
+  // Every driver in a standings table drove for that team that season, so the links are
+  // derived rather than restated, which keeps the two from drifting apart.
+  const links = [
+    ...seedDriverTeamSeasons,
+    ...seedDriverStandings.map((standing) => ({
+      driver: standing.driver,
+      team: standing.team,
+      year: standing.year,
+      car: undefined,
+    })),
+  ];
+
   await db
     .insert(driverTeamSeasons)
     .values(
-      seedDriverTeamSeasons.map((link) => ({
+      links.map((link) => ({
         driverId: requireId(driverIdBySlug, link.driver, "driver"),
         teamId: requireId(teamIdBySlug, link.team, "team"),
         seasonId: requireSeasonId(seasonIdByYear, link.year),
@@ -204,7 +265,7 @@ async function seed() {
     .onConflictDoNothing();
 
   console.log(
-    `Done. ${teamRows.length} teams, ${driverRows.length} drivers, ${seasonRows.length} seasons, ${seedCircuits.length} circuits, ${carRows.length} cars, ${seedDriverTeamSeasons.length} links.`,
+    `Done. ${teamRows.length} teams, ${driverRows.length} drivers, ${seasonRows.length} seasons, ${seedCircuits.length} circuits, ${carRows.length} cars, ${links.length} links, ${seedDriverStandings.length} driver standings, ${seedConstructorStandings.length} constructor standings.`,
   );
 }
 

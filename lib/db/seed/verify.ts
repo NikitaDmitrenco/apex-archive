@@ -162,6 +162,19 @@ async function main() {
   const range = await seasonsQueries.getEarliestAndLatestSeason();
   console.log("getEarliestAndLatestSeason ->", range);
 
+  const archiveQueries = await import("../queries/archive");
+  console.time("getArchiveStats");
+  const stats = await archiveQueries.getArchiveStats();
+  console.timeEnd("getArchiveStats");
+  console.log("getArchiveStats ->", stats);
+
+  console.time("getSeasonStandings");
+  const standings = await seasonsQueries.getSeasonStandings(2026);
+  console.timeEnd("getSeasonStandings");
+  console.log(
+    `getSeasonStandings(2026) -> ${standings.drivers.length} drivers, ${standings.constructors.length} constructors; leader ${standings.drivers[0]?.driverName} on ${standings.drivers[0]?.points}`,
+  );
+
   // The search vectors are generated columns, so seeding should have populated them.
   // Milestone 9 builds the search UI on top of these; this proves the groundwork holds.
   const { db } = await import("../index");

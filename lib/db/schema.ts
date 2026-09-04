@@ -311,11 +311,14 @@ export const driverStandings = pgTable(
       .notNull()
       .references(() => teams.id),
     position: integer("position").notNull(),
-    points: numeric("points", { precision: 7, scale: 2, mode: "number" })
-      .notNull()
-      .default(0),
-    wins: integer("wins").notNull().default(0),
-    podiums: integer("podiums").notNull().default(0),
+    points: numeric("points", {
+      precision: 7,
+      scale: 2,
+      mode: "number",
+    }).notNull(),
+    /** Nullable with no default: an unknown tally must not be recorded as zero. */
+    wins: integer("wins"),
+    podiums: integer("podiums"),
     dataConfidence: dataConfidence("data_confidence")
       .notNull()
       .default("placeholder"),
@@ -339,10 +342,12 @@ export const constructorStandings = pgTable(
       .notNull()
       .references(() => teams.id),
     position: integer("position").notNull(),
-    points: numeric("points", { precision: 7, scale: 2, mode: "number" })
-      .notNull()
-      .default(0),
-    wins: integer("wins").notNull().default(0),
+    points: numeric("points", {
+      precision: 7,
+      scale: 2,
+      mode: "number",
+    }).notNull(),
+    wins: integer("wins"),
     dataConfidence: dataConfidence("data_confidence")
       .notNull()
       .default("placeholder"),
